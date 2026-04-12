@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.baitapdidongcuoiki.data.repository.RemoteRepository
+import com.example.baitapdidongcuoiki.data.repository.TransactionRepositoryImpl
 import com.example.baitapdidongcuoiki.domain.model.Transaction
+import com.example.baitapdidongcuoiki.domain.repository.TransactionRepository
 import com.example.baitapdidongcuoiki.domain.usecase.UseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +30,8 @@ data class HomeState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val useCases: UseCases,
-    private val remoteRepository: RemoteRepository
+    private val remoteRepository: RemoteRepository,
+    private val repository: TransactionRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
@@ -38,6 +41,12 @@ class HomeViewModel @Inject constructor(
         observeTransactions()
         syncWithBackend()
     }
+    fun syncFromCloud() {
+        viewModelScope.launch {
+            repository.syncTransactionsFromCloud()
+        }
+    }
+
 
     private fun observeTransactions() {
         useCases.getTransactionsUseCase()

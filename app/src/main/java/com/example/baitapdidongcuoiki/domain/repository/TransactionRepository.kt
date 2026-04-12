@@ -8,4 +8,5 @@ interface TransactionRepository {
     suspend fun addTransaction(transaction: Transaction)
 
     fun getTransactions(): Flow<List<Transaction>>
+    suspend fun syncTransactionsFromCloud()
 }

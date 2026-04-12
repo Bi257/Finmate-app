@@ -32,7 +32,7 @@ class TransactionRepositoryImpl @Inject constructor(
                 "type" to transaction.type,
                 "date" to transaction.date,
                 "note" to transaction.note,
-                "timestamp" to System.currentTimeMillis() // Thêm thời gian để sắp xếp
+                "timestamp" to System.currentTimeMillis()
             )
             firestore.collection("users").document(userId)
                 .collection("transactions")
@@ -43,15 +43,15 @@ class TransactionRepositoryImpl @Inject constructor(
         }
     }
 
-    // 2. Lấy dữ liệu từ Room (UI luôn lấy từ đây để nhanh)
+    // 2. Lấy dữ liệu từ Room (UI lấy trực tiếp từ Flow này)
     override fun getTransactions(): Flow<List<Transaction>> {
         return dao.getAll().map { entities ->
             entities.map { it.toDomain() }
         }
     }
 
-    // 3. HÀM MỚI: Đồng bộ dữ liệu từ Cloud về Local (Call khi vào màn Home hoặc Refresh)
-    suspend fun syncTransactionsFromCloud() {
+    // 3. CẬP NHẬT: Thêm 'override' và logic xóa dữ liệu cũ trước khi sync
+    override suspend fun syncTransactionsFromCloud() { // 🔹 Đã thêm override
         val userId = auth.currentUser?.uid ?: return
         try {
             val snapshot = firestore.collection("users").document(userId)
@@ -60,19 +60,20 @@ class TransactionRepositoryImpl @Inject constructor(
                 .await()
 
             val cloudTransactions = snapshot.documents.mapNotNull { doc ->
-                // Ánh xạ từ Document Firestore sang Domain Model của bạn
                 Transaction(
                     title = doc.getString("title") ?: "",
                     amount = doc.getDouble("amount") ?: 0.0,
                     type = doc.getString("type") ?: "",
-                    date = doc.getLong("date") ?: 0L,
+                    date = doc.getLong("date") ?: 0L, // Khớp với kiểu Long của bạn
                     note = doc.getString("note") ?: ""
                 )
             }
 
-            // Lưu tất cả dữ liệu mới tải về vào Room
-            cloudTransactions.forEach { transaction ->
-                dao.insert(transaction.toEntity())
+            if (cloudTransactions.isNotEmpty()) {
+                // Tùy chọn: dao.clearAll() // Xóa sạch local nếu bạn muốn đồng bộ khớp 100% với Cloud
+                cloudTransactions.forEach { transaction ->
+                    dao.insert(transaction.toEntity())
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
