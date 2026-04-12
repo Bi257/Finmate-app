@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.AppSplash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#F0EDE9</item>
+
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+
+        <item name="postSplashScreenTheme">@style/Theme.Baitapdidongcuoiki</item>
+    </style>
+
+    <style name="Theme.Baitapdidongcuoiki" parent="Theme.AppCompat.Light.NoActionBar">
+
+        <item name="android:statusBarColor">#F0EDE9</item>
+        <item name="android:windowLightStatusBar">true</item>
+
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+</resources>
