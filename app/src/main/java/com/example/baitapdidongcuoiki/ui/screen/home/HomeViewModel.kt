@@ -7,12 +7,7 @@ import com.example.baitapdidongcuoiki.data.repository.RemoteRepository
 import com.example.baitapdidongcuoiki.domain.model.Transaction
 import com.example.baitapdidongcuoiki.domain.usecase.UseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -35,22 +30,30 @@ class HomeViewModel @Inject constructor(
     val state: StateFlow<HomeState> = _state
 
     init {
+        // Lắng nghe dữ liệu ngay khi khởi tạo
         observeTransactions()
         syncWithBackend()
     }
 
     private fun observeTransactions() {
+        _state.update { it.copy(isLoading = true) }
+
+        // UseCase này gọi đến Repository (nơi mình đã sửa để lấy từ Firestore theo UserId)
         useCases.getTransactionsUseCase()
             .onEach { list ->
-                val income = calculateIncome(list)
-                val expense = calculateExpense(list)
+                // Sắp xếp dữ liệu mới nhất lên đầu
+                val sortedList = list.sortedByDescending { it.date }
+                val income = calculateIncome(sortedList)
+                val expense = calculateExpense(sortedList)
+
                 _state.update {
                     it.copy(
-                        transactions = list,
+                        transactions = sortedList,
                         totalIncome = income,
                         totalExpense = expense,
                         balance = income - expense,
-                        isLoading = false
+                        isLoading = false,
+                        error = null
                     )
                 }
             }
@@ -60,57 +63,48 @@ class HomeViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
+    // Logic tính toán giữ nguyên nhưng dùng ignoreCase cho an toàn
     private fun calculateIncome(list: List<Transaction>): Double =
-        list.filter { it.type.equals("income", ignoreCase = true) }.sumOf { it.amount }
+        list.filter { it.type.equals("income", ignoreCase = true) || it.type.contains("thu", ignoreCase = true) }
+            .sumOf { it.amount }
 
     private fun calculateExpense(list: List<Transaction>): Double =
-        list.filter { it.type.equals("expense", ignoreCase = true) }.sumOf { it.amount }
+        list.filter { it.type.equals("expense", ignoreCase = true) || it.type.contains("chi", ignoreCase = true) }
+            .sumOf { it.amount }
 
     private fun syncWithBackend() {
         viewModelScope.launch {
             try {
                 remoteRepository.syncWithBackend()
-                Log.d("HomeViewModel", "Đồng bộ tỷ giá / vàng (API) xong")
+                Log.d("HomeViewModel", "Đồng bộ API tỷ giá thành công")
             } catch (e: Exception) {
-                Log.e("HomeViewModel", "Sync API: ${e.message}")
-                _state.update { it.copy(error = e.message) }
+                Log.e("HomeViewModel", "Lỗi Sync API: ${e.message}")
             }
         }
     }
 
     fun refresh() {
         syncWithBackend()
+        // Gọi lại để đảm bảo dữ liệu mới nhất
+        observeTransactions()
     }
 
-    fun addTransaction(title: String, amount: Double, type: String) {
+    fun addTransaction(title: String, amount: Double, type: String, note: String = "") {
         viewModelScope.launch {
             val newTransaction = Transaction(
-                id = null,
                 title = title,
                 amount = amount,
-                type = type.trim().lowercase(),
-                date = System.currentTimeMillis()
+                type = type.trim(),
+                date = System.currentTimeMillis(),
+                note = note
             )
 
-            val currentList = _state.value.transactions
-            val updatedList = (currentList + newTransaction).sortedByDescending { it.date }
-
-            val newIncome = calculateIncome(updatedList)
-            val newExpense = calculateExpense(updatedList)
-
-            _state.update {
-                it.copy(
-                    transactions = updatedList,
-                    totalIncome = newIncome,
-                    totalExpense = newExpense,
-                    balance = newIncome - newExpense
-                )
-            }
-
             try {
+                // Chỉ cần gọi UseCase, vì observeTransactions() đang "lắng nghe"
+                // nên khi Firebase có đồ mới, UI sẽ tự nhảy số theo.
                 useCases.addTransactionUseCase(newTransaction)
             } catch (e: Exception) {
-                _state.update { it.copy(error = e.message) }
+                _state.update { it.copy(error = "Không thể thêm giao dịch: ${e.message}") }
             }
         }
     }

@@ -8,18 +8,12 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -45,7 +39,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.example.baitapdidongcuoiki.ui.screen.login.LoginScreen
 import com.example.baitapdidongcuoiki.ui.screen.login.LoginViewModel
 import com.example.baitapdidongcuoiki.ui.screen.register.RegisterScreen
-import com.example.baitapdidongcuoiki.ui.screen.profile.ProfileScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -78,8 +71,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             BaitapdidongcuoikiTheme {
-                val activity = LocalContext.current as ComponentActivity
-                val dailyMarketVm: DailyMarketViewModel = hiltViewModel(activity)
+                val dailyMarketVm: DailyMarketViewModel = hiltViewModel()
                 val marketUi by dailyMarketVm.ui.collectAsStateWithLifecycle()
 
                 LaunchedEffect(Unit) { dailyMarketVm.loadAndShowOnce() }
@@ -91,7 +83,6 @@ class MainActivity : ComponentActivity() {
                 val isAuthScreen = currentRoute == "login" || currentRoute == "register"
 
                 Scaffold(
-                    // Màu nền kem đồng bộ toàn app
                     containerColor = Color(0xFFFAF9F6),
                     floatingActionButton = {
                         if (currentRoute == "home") {
@@ -108,9 +99,9 @@ class MainActivity : ComponentActivity() {
                             NavigationBar(
                                 containerColor = Color.White,
                                 tonalElevation = 8.dp,
-                                modifier = Modifier.height(85.dp) // Tăng chiều cao để chứa icon Trang chủ to
+                                modifier = Modifier.height(85.dp)
                             ) {
-                                // Sắp xếp "home" vào chính giữa (vị trí thứ 3 trong 5 mục)
+                                // 1. KHÔI PHỤC DANH SÁCH CŨ (CÓ THÔNG BÁO, BỎ CÁ NHÂN)
                                 val items = listOf("wallet", "report", "home", "tax", "notification")
 
                                 items.forEach { screen ->
@@ -137,12 +128,10 @@ class MainActivity : ComponentActivity() {
                                                     "wallet" -> Icons.Default.AccountBalanceWallet
                                                     "report" -> Icons.Default.Description
                                                     "tax" -> Icons.Default.Calculate
-                                                    else -> Icons.Default.Notifications
+                                                    else -> Icons.Default.Notifications // Icon Thông báo
                                                 },
                                                 contentDescription = null,
-                                                // Icon Trang chủ to hơn các icon khác
                                                 modifier = Modifier.size(if (isHome) 32.dp else 24.dp),
-                                                // Màu tím logo làm màu nhấn
                                                 tint = if (isSelected) Color(0xFF9C27B0) else Color.Gray
                                             )
                                         },
@@ -155,7 +144,6 @@ class MainActivity : ComponentActivity() {
                                                     "tax" -> "Thuế"
                                                     else -> "Thông báo"
                                                 },
-                                                // Chữ Trang chủ to và đậm hơn để nổi bật
                                                 fontSize = if (isHome) 12.sp else 10.sp,
                                                 fontWeight = if (isHome) FontWeight.Bold else FontWeight.Normal,
                                                 color = if (isSelected) Color(0xFF9C27B0) else Color.Gray
@@ -183,11 +171,9 @@ class MainActivity : ComponentActivity() {
                             RegisterScreen(navController = navController)
                         }
                         composable("home") {
+                            // Khởi tạo lại ViewModel khi vào Home để làm mới dữ liệu theo tài khoản
                             val viewModel: HomeViewModel = hiltViewModel()
                             HomeScreen(viewModel = viewModel, navController = navController)
-                        }
-                        composable("profile") {
-                            ProfileScreen(navController = navController)
                         }
                         composable("notification") {
                             NotificationScreen()
