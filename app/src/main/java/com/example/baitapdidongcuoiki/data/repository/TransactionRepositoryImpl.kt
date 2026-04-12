@@ -14,69 +14,40 @@ import javax.inject.Inject
 
 class TransactionRepositoryImpl @Inject constructor(
     private val dao: TransactionDao,
-    private val firestore: FirebaseFirestore,
-    private val auth: FirebaseAuth
+    private val firestore: FirebaseFirestore, // 🔹 Inject thêm Firestore
+    private val auth: FirebaseAuth           // 🔹 Inject thêm Auth để lấy ID người dùng
 ) : TransactionRepository {
 
-    // 1. Thêm giao dịch: Lưu local xong đẩy lên Cloud
     override suspend fun addTransaction(transaction: Transaction) {
-        // Lưu Local (SQLite/Room)
+        // 1. Luôn luôn lưu vào Room (Local) trước để app chạy mượt khi offline
         dao.insert(transaction.toEntity())
 
-        // Đẩy lên Firestore
-        val userId = auth.currentUser?.uid ?: return
+        // 2. Đẩy lên Cloud Firestore
         try {
-            val transactionMap = hashMapOf(
-                "title" to transaction.title,
-                "amount" to transaction.amount,
-                "type" to transaction.type,
-                "date" to transaction.date,
-                "note" to transaction.note,
-                "timestamp" to System.currentTimeMillis()
-            )
-            firestore.collection("users").document(userId)
-                .collection("transactions")
-                .add(transactionMap)
-                .await()
+            val userId = auth.currentUser?.uid
+            if (userId != null) {
+                val transactionMap = hashMapOf(
+                    "title" to transaction.title,
+                    "amount" to transaction.amount,
+                    "type" to transaction.type,
+                    "date" to transaction.date,
+                    "note" to transaction.note
+                )
+
+                firestore.collection("users")
+                    .document(userId)
+                    .collection("transactions")
+                    .add(transactionMap)
+                    .await() // Đợi đẩy lên thành công
+            }
         } catch (e: Exception) {
-            e.printStackTrace()
+            e.printStackTrace() // Log lỗi nếu không lưu được Cloud (ví dụ mất mạng)
         }
     }
 
-    // 2. Lấy dữ liệu từ Room (UI lấy trực tiếp từ Flow này)
     override fun getTransactions(): Flow<List<Transaction>> {
         return dao.getAll().map { entities ->
             entities.map { it.toDomain() }
-        }
-    }
-
-    // 3. CẬP NHẬT: Thêm 'override' và logic xóa dữ liệu cũ trước khi sync
-    override suspend fun syncTransactionsFromCloud() { // 🔹 Đã thêm override
-        val userId = auth.currentUser?.uid ?: return
-        try {
-            val snapshot = firestore.collection("users").document(userId)
-                .collection("transactions")
-                .get()
-                .await()
-
-            val cloudTransactions = snapshot.documents.mapNotNull { doc ->
-                Transaction(
-                    title = doc.getString("title") ?: "",
-                    amount = doc.getDouble("amount") ?: 0.0,
-                    type = doc.getString("type") ?: "",
-                    date = doc.getLong("date") ?: 0L, // Khớp với kiểu Long của bạn
-                    note = doc.getString("note") ?: ""
-                )
-            }
-
-            if (cloudTransactions.isNotEmpty()) {
-                // Tùy chọn: dao.clearAll() // Xóa sạch local nếu bạn muốn đồng bộ khớp 100% với Cloud
-                cloudTransactions.forEach { transaction ->
-                    dao.insert(transaction.toEntity())
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
     }
 }

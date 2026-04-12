@@ -87,7 +87,14 @@ object AppModule {
             .create(BinanceApi::class.java)
     }
 
+    // ===== ☁️ FIREBASE (Mới thêm) =====
+    @Provides
+    @Singleton
+    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
 
+    @Provides
+    @Singleton
+    fun provideAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 
     // ===== 🧠 REPOSITORY (Đã cập nhật tham số) =====
     @Provides

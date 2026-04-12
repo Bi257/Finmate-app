@@ -62,26 +62,25 @@ android {
 }
 
 dependencies {
+    implementation("androidx.compose.material:material-icons-extended:1.6.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.work:work-runtime-ktx:2.8.1")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.navigation:navigation-compose:2.7.7")
-    implementation("androidx.activity:activity-compose:1.9.0")
+
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+
     implementation("androidx.compose.material3:material3:1.2.1")
     implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+
     implementation("androidx.compose.material:material-icons-extended")
     // Excel
     implementation("org.apache.poi:poi:5.2.3")
 
     implementation("com.google.android.material:material:1.11.0")
-    implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
+
     // ── 1. Core & Compose ──
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

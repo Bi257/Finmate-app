@@ -1,163 +1,121 @@
 package com.example.baitapdidongcuoiki.ui.screen.register
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel // 🔹 Thêm cái này
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import kotlinx.coroutines.launch // 🔹 Thêm cái này
+import com.example.baitapdidongcuoiki.ui.screen.login.MyGradient
+import com.example.baitapdidongcuoiki.ui.screen.login.MyLightPurple
+import com.example.baitapdidongcuoiki.ui.screen.login.MyPurple
 
-// ✨ Sử dụng lại bảng màu Hồng - Tím của bạn
-val MyPurple = Color(0xFF9C27B0)
-val MyPink = Color(0xFFE91E63)
-val MyLightPurple = Color(0xFFF3E5F5)
-val MyGradient = Brush.linearGradient(colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0)))
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     navController: NavController,
-    viewModel: RegisterViewModel = hiltViewModel() // 🔹 Nhúng ViewModel vào đây
+    viewModel: RegisterViewModel = hiltViewModel()
 ) {
-    // Các biến tạm thời để lưu dữ liệu nhập vào
-    var email by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
-    // 🔹 Thêm các biến quản lý trạng thái hiển thị thông báo/loading
-    val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
-    var isLoading by remember { mutableStateOf(false) }
+    // Theo dõi trạng thái đăng ký để hiện Toast và chuyển trang
+    LaunchedEffect(viewModel.registerStatus) {
+        if (viewModel.registerStatus.contains("thành công")) {
+            Toast.makeText(context, viewModel.registerStatus, Toast.LENGTH_SHORT).show()
+            navController.navigate("login") {
+                popUpTo("register") { inclusive = true }
+            }
+        } else if (viewModel.registerStatus.contains("Lỗi")) {
+            Toast.makeText(context, viewModel.registerStatus, Toast.LENGTH_LONG).show()
+        }
+    }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }, // 🔹 Hiển thị lỗi nếu có
-        containerColor = MyLightPurple
-    ) { paddingValues ->
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            color = MyLightPurple
+    Surface(modifier = Modifier.fillMaxSize(), color = MyLightPurple) {
+        Box(
+            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+            contentAlignment = Alignment.Center
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(24.dp),
+                shape = RoundedCornerShape(32.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(6.dp)
             ) {
-                Text(
-                    text = "Tạo tài khoản",
-                    color = MyPurple,
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-                Text(text = "Tham gia cùng FinMate ngay", color = Color.Gray, fontSize = 14.sp)
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(32.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(modifier = Modifier.padding(24.dp)) {
-                        // Ô nhập Email
-                        OutlinedTextField(
-                            value = email,
-                            onValueChange = { email = it },
-                            label = { Text("Email") },
-                            leadingIcon = { Icon(Icons.Default.Email, null, tint = MyPurple.copy(0.4f)) },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MyPurple)
-                        )
+                    Text("Tạo tài khoản", color = MyPurple, fontSize = 24.sp, fontWeight = FontWeight.Bold)
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                        // Ô nhập Username
-                        OutlinedTextField(
-                            value = username,
-                            onValueChange = { username = it },
-                            label = { Text("Tên tài khoản") },
-                            leadingIcon = { Icon(Icons.Default.Person, null, tint = MyPurple.copy(0.4f)) },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MyPurple)
-                        )
+                    OutlinedTextField(
+                        value = viewModel.email,
+                        onValueChange = { viewModel.email = it },
+                        label = { Text("Email") },
+                        leadingIcon = { Icon(Icons.Default.Email, null, tint = MyPurple) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp)
+                    )
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                        // Ô nhập Password
-                        OutlinedTextField(
-                            value = password,
-                            onValueChange = { password = it },
-                            label = { Text("Mật khẩu") },
-                            leadingIcon = { Icon(Icons.Default.Lock, null, tint = MyPurple.copy(0.4f)) },
-                            visualTransformation = PasswordVisualTransformation(),
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MyPurple)
-                        )
+                    OutlinedTextField(
+                        value = viewModel.password,
+                        onValueChange = { viewModel.password = it },
+                        label = { Text("Mật khẩu") },
+                        leadingIcon = { Icon(Icons.Default.Lock, null, tint = MyPurple) },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp)
+                    )
 
-                        Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                        // Nút Đăng ký
+                    OutlinedTextField(
+                        value = viewModel.confirmPassword,
+                        onValueChange = { viewModel.confirmPassword = it },
+                        label = { Text("Xác nhận mật khẩu") },
+                        leadingIcon = { Icon(Icons.Default.Lock, null, tint = MyPurple) },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Nút Đăng ký
+                    Box(
+                        modifier = Modifier.fillMaxWidth().height(56.dp).background(MyGradient, RoundedCornerShape(16.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Button(
-                            onClick = {
-                                // 🔹 Gọi logic đăng ký từ ViewModel
-                                isLoading = true
-                                viewModel.register(
-                                    email = email,
-                                    pass = password,
-                                    onSuccess = {
-                                        isLoading = false
-                                        // Đăng ký thành công thì chuyển màn hình
-                                        navController.navigate("home") {
-                                            popUpTo("register") { inclusive = true }
-                                        }
-                                    },
-                                    onError = { error ->
-                                        isLoading = false
-                                        scope.launch {
-                                            snackbarHostState.showSnackbar(error)
-                                        }
-                                    }
-                                )
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                                .background(MyGradient, RoundedCornerShape(16.dp)),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                            enabled = !isLoading // 🔹 Vô hiệu hóa nút khi đang load
+                            onClick = { viewModel.onRegisterClick() },
+                            modifier = Modifier.fillMaxSize(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                         ) {
-                            if (isLoading) {
-                                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                            } else {
-                                Text("ĐĂNG KÝ", color = Color.White, fontWeight = FontWeight.Bold)
-                            }
+                            Text("ĐĂNG KÝ", color = Color.White, fontWeight = FontWeight.Bold)
                         }
                     }
-                }
 
-                // Nút quay lại Đăng nhập
-                TextButton(onClick = { navController.popBackStack() }) {
-                    Text("Đã có tài khoản? Đăng nhập ngay", color = MyPurple)
+                    TextButton(onClick = { navController.popBackStack() }) {
+                        Text("Đã có tài khoản? Đăng nhập ngay", color = MyPurple)
+                    }
                 }
             }
         }

@@ -57,7 +57,6 @@ object ExcelExporter {
                     row.createCell(5).setCellValue(t.note)
                 }
 
-            // Không dùng autoSizeColumn: POI gọi java.awt (không có trên Android) → crash runtime.
             val widths = intArrayOf(6, 28, 14, 16, 20, 32)
             widths.forEachIndexed { i, chars -> sheet.setColumnWidth(i, chars * 256) }
 

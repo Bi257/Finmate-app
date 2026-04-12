@@ -20,7 +20,7 @@ data class TaxState(
     val tax: Double = 0.0,
     val taxableIncome: Double = 0.0,
     val dependantDeduction: Double = 0.0,
-    val personalDeduction: Double = 11_000_000.0
+    val personalDeduction: Double = 11_000_000.0 * 12
 )
 
 @HiltViewModel
