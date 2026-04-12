@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "512609111531",
+    "project_id": "didong-5909e",
+    "storage_bucket": "didong-5909e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:512609111531:android:a6a7be86a347a95749ddae",
+        "android_client_info": {
+          "package_name": "com.example.baitapdidongcuoiki"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDufu7N5rJuzaKQnB3EEvCHT_M2HBt6iIg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
