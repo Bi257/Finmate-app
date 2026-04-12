@@ -1,156 +1,160 @@
 package com.example.baitapdidongcuoiki.ui.screen.notification
 
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.baitapdidongcuoiki.ui.components.NotificationItem
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NotificationScreen() {
+fun NotificationScreen(
+    viewModel: NotificationViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
-    val viewModel: NotificationViewModel = hiltViewModel()
-    val notifications by viewModel.notifications.collectAsStateWithLifecycle()
-
-    // Bảng màu đồng bộ với HomeScreen
-    val PurpleMain = Color(0xFF9C27B0)
-    val SoftPink = Color(0xFFFFE1E6)
-    val SoftPurple = Color(0xFFF3E5F5)
-    val WhiteCard = Color.White
+    val smsList by viewModel.smsMessages.collectAsStateWithLifecycle(initialValue = emptyList())
+    val hasSmsPermission = remember {
+        ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED
+    }
 
     Scaffold(
+        containerColor = Color(0xFFF8F9FA),
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        "Thông báo",
-                        fontWeight = FontWeight.Bold,
-                        color = PurpleMain,
-                        fontSize = 20.sp
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = SoftPink // Màu nền TopBar hồng nhạt
-                )
+                title = { Text("Thông báo", color = Color(0xFF4A148C)) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
+                navigationIcon = {
+                    IconButton(onClick = { /* đóng màn hình nếu cần */ }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color(0xFF9C27B0))
+                    }
+                }
             )
         }
     ) { padding ->
-        // Nền Gradient 3 màu: Hồng -> Tím Nhạt -> Trắng
-        Box(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(SoftPink, SoftPurple, Color.White)
-                    )
-                )
+                .padding(padding),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // 🔹 CARD CÀI ĐẶT QUYỀN
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = WhiteCard.copy(alpha = 0.9f)
-                        ),
-                        elevation = CardDefaults.cardElevation(2.dp)
+            // Card hướng dẫn quyền
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(4.dp, RoundedCornerShape(20.dp)),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
+                        Text(
+                            text = "Quyền & cài đặt",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = Color(0xFF4A148C)
+                        )
+                        Text(
+                            text = "Để đọc biến động số dư từ SMS, cấp quyền khi app hỏi. Để đọc thông báo ngân hàng/MoMo: bật Trợ năng → Truy cập thông báo cho app này.",
+                            fontSize = 14.sp,
+                            color = Color(0xFF6A1B9A)
+                        )
+                        if (!hasSmsPermission) {
                             Text(
-                                "Quyền & cài đặt",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = PurpleMain
+                                text = "⚠️ Chưa cấp quyền đọc SMS. Vui lòng cấp quyền trong cài đặt.",
+                                color = Color(0xFFF44336),
+                                fontSize = 12.sp
                             )
-                            Text(
-                                "Để đọc biến động số dư từ SMS: cấp quyền khi app hỏi. " +
-                                        "Để đọc thông báo ngân hàng/MoMo: bật Trợ năng → " +
-                                        "Truy cập thông báo cho app này.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray
-                            )
-
-                            // Nút bấm màu Tím
-                            Button(
-                                onClick = {
-                                    context.startActivity(
-                                        Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
-                                    )
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(containerColor = PurpleMain),
-                                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
-                            ) {
-                                Text("Mở cài đặt đọc thông báo", color = Color.White)
-                            }
-
-                            OutlinedButton(
-                                onClick = {
-                                    context.startActivity(
-                                        Intent(
-                                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                                            Uri.fromParts("package", context.packageName, null)
-                                        )
-                                    )
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                border = androidx.compose.foundation.BorderStroke(1.dp, PurpleMain),
-                                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
-                            ) {
-                                Text("Chi tiết quyền ứng dụng", color = PurpleMain)
-                            }
                         }
                     }
                 }
+            }
 
-                // 🔹 TRẠNG THÁI TRỐNG
-                if (notifications.isEmpty()) {
-                    item {
-                        Box(
+            // Danh sách tin nhắn SMS
+            if (smsList.isEmpty()) {
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(4.dp, RoundedCornerShape(20.dp)),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                    ) {
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 100.dp),
-                            contentAlignment = Alignment.Center
+                                .padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    "Chưa có thông báo nào",
-                                    color = Color.Gray,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
+                            // ✅ SỬA LỖI: thay Icons.Default.Sms bằng Icons.Default.Message
+                            Icon(
+                                Icons.Default.Message,
+                                contentDescription = null,
+                                tint = Color(0xFFCE93D8),
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            Text(
+                                text = "Chưa có tin nhắn SMS hoặc biến động số dư nào",
+                                color = Color(0xFF8E24AA),
+                                fontSize = 16.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
                         }
                     }
-                } else {
-                    items(notifications) { notification ->
-                        // Chú ý: Component NotificationItem nên được bạn chỉnh màu bên trong file của nó
-                        NotificationItem(notification = notification)
+                }
+            } else {
+                items(smsList) { sms ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(2.dp, RoundedCornerShape(16.dp)),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                text = "Tin nhắn từ ${sms.address ?: "Ngân hàng"}",
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF4A148C),
+                                fontSize = 14.sp
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = sms.body,
+                                fontSize = 13.sp,
+                                color = Color(0xFF6A1B9A),
+                                maxLines = 3
+                            )
+                            Text(
+                                text = SimpleDateFormat("HH:mm dd/MM/yyyy", Locale.getDefault()).format(Date(sms.date)),
+                                fontSize = 11.sp,
+                                color = Color.Gray,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
                     }
                 }
             }

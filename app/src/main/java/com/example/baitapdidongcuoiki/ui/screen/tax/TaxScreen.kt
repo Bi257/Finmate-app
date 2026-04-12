@@ -37,11 +37,9 @@ fun TaxScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val formatter = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
 
-    // Bảng màu đồng bộ HomeScreen
     val PurpleMain = Color(0xFF9C27B0)
     val SoftPink = Color(0xFFFFE1E6)
     val SoftPurple = Color(0xFFF3E5F5)
-    val WhiteCard = Color.White
 
     val animatedTax by animateFloatAsState(
         targetValue = state.tax.toFloat(),
@@ -72,12 +70,11 @@ fun TaxScreen(
             )
 
             Text(
-                "Nhập thu nhập để tính thuế. Áp dụng giảm trừ bản thân 11tr/tháng.",
+                "Nhập thu nhập để tính thuế. Áp dụng giảm trừ bản thân 11tr/tháng + 4,4tr/người phụ thuộc.",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
 
-            // Sửa lỗi: Sử dụng OutlinedTextFieldDefaults.outlinedTextFieldColors
             val textFieldColors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = PurpleMain,
                 unfocusedBorderColor = Color.LightGray,
@@ -87,7 +84,7 @@ fun TaxScreen(
             OutlinedTextField(
                 value = state.salaryInput,
                 onValueChange = viewModel::onSalaryChange,
-                label = { Text("Thu nhập từ lương (VNĐ)") },
+                label = { Text("Thu nhập từ lương / tiền công (VNĐ)") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -131,7 +128,7 @@ fun TaxScreen(
             }
 
             Card(
-                colors = CardDefaults.cardColors(containerColor = WhiteCard),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
                 shape = RoundedCornerShape(24.dp),
                 elevation = CardDefaults.cardElevation(4.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -141,14 +138,16 @@ fun TaxScreen(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     TaxInfoRow("Tổng thu nhập", formatter.format(state.grossIncome))
-                    TaxInfoRow("Giảm trừ gia cảnh", formatter.format(state.personalDeduction + state.dependantDeduction))
+                    TaxInfoRow("Giảm trừ bản thân", formatter.format(state.personalDeduction))
+                    TaxInfoRow("Giảm trừ người phụ thuộc", formatter.format(state.dependantDeduction))
+                    TaxInfoRow("Thu nhập chịu thuế", formatter.format(state.taxableIncome))
 
                     Divider(modifier = Modifier.padding(vertical = 12.dp), color = SoftPurple)
 
-                    Text("Thuế phải nộp:", fontWeight = FontWeight.Bold, color = Color.DarkGray)
+                    Text("Thuế phải nộp (lũy tiến):", fontWeight = FontWeight.Bold, color = Color.DarkGray)
                     Text(
                         formatter.format(animatedTax.toDouble()),
-                        color = Color(0xFFC62828), // Màu đỏ nhấn mạnh số tiền thuế
+                        color = Color(0xFFC62828),
                         fontSize = 26.sp,
                         fontWeight = FontWeight.ExtraBold
                     )
