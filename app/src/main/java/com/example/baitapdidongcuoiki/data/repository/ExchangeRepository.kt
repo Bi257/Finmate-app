@@ -3,7 +3,7 @@ package com.example.baitapdidongcuoiki.data.repository
 import com.example.baitapdidongcuoiki.api.ExchangeApi
 import com.example.baitapdidongcuoiki.api.ExchangeResponse
 import com.example.baitapdidongcuoiki.data.local.ExchangeRateDao
-import com.example.baitapdidongcuoiki.data.local.entity.ExchangeRateEntity
+import com.example.baitapdidongcuoiki.data.local.ExchangeRateEntity
 import com.example.baitapdidongcuoiki.data.remote.dto.ExchangeRateDto
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException

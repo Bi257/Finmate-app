@@ -3,7 +3,7 @@ package com.example.baitapdidongcuoiki.data.repository
 import android.util.Log
 import com.example.baitapdidongcuoiki.api.BinanceApi
 import com.example.baitapdidongcuoiki.data.local.ExchangeRateDao
-import com.example.baitapdidongcuoiki.data.local.entity.ExchangeRateEntity
+import com.example.baitapdidongcuoiki.data.local.ExchangeRateEntity
 import com.google.gson.Gson
 import javax.inject.Inject
 import javax.inject.Singleton
