@@ -14,39 +14,41 @@ import javax.inject.Inject
 
 class TransactionRepositoryImpl @Inject constructor(
     private val dao: TransactionDao,
-    private val firestore: FirebaseFirestore, // 🔹 Inject thêm Firestore
-    private val auth: FirebaseAuth           // 🔹 Inject thêm Auth để lấy ID người dùng
+    private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth
 ) : TransactionRepository {
 
+    private fun getCurrentUserId(): String {
+        return auth.currentUser?.uid ?: throw IllegalStateException("Chưa đăng nhập")
+    }
+
     override suspend fun addTransaction(transaction: Transaction) {
-        // 1. Luôn luôn lưu vào Room (Local) trước để app chạy mượt khi offline
-        dao.insert(transaction.toEntity())
+        val userId = getCurrentUserId()
+        // 1. Lưu vào Room với userId
+        dao.insert(transaction.toEntity(userId = userId))
 
-        // 2. Đẩy lên Cloud Firestore
+        // 2. Đẩy lên Firestore
         try {
-            val userId = auth.currentUser?.uid
-            if (userId != null) {
-                val transactionMap = hashMapOf(
-                    "title" to transaction.title,
-                    "amount" to transaction.amount,
-                    "type" to transaction.type,
-                    "date" to transaction.date,
-                    "note" to transaction.note
-                )
-
-                firestore.collection("users")
-                    .document(userId)
-                    .collection("transactions")
-                    .add(transactionMap)
-                    .await() // Đợi đẩy lên thành công
-            }
+            val transactionMap = hashMapOf(
+                "title" to transaction.title,
+                "amount" to transaction.amount,
+                "type" to transaction.type,
+                "date" to transaction.date,
+                "note" to transaction.note
+            )
+            firestore.collection("users")
+                .document(userId)
+                .collection("transactions")
+                .add(transactionMap)
+                .await()
         } catch (e: Exception) {
-            e.printStackTrace() // Log lỗi nếu không lưu được Cloud (ví dụ mất mạng)
+            e.printStackTrace()
         }
     }
 
     override fun getTransactions(): Flow<List<Transaction>> {
-        return dao.getAll().map { entities ->
+        val userId = getCurrentUserId()
+        return dao.getTransactionsByUserId(userId).map { entities ->
             entities.map { it.toDomain() }
         }
     }
