@@ -9,9 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -27,6 +25,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.baitapdidongcuoiki.ui.components.TransactionItem
+import com.google.firebase.auth.FirebaseAuth
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -40,12 +39,16 @@ fun HomeScreen(
     val transactions = state.transactions
     val formatter = remember { NumberFormat.getCurrencyInstance(Locale("vi", "VN")) }
 
-    // Gradient nền hồng tím
+    // --- 1. KHAI BÁO BIẾN ĐỂ QUẢN LÝ DIALOG ĐĂNG XUẤT ---
+    var showProfileDialog by remember { mutableStateOf(false) }
+    val auth = FirebaseAuth.getInstance()
+    val userEmail = auth.currentUser?.email ?: "Người dùng"
+
     val gradientBrush = Brush.verticalGradient(
         colors = listOf(
-            Color(0xFFF8BBD0), // hồng nhạt
-            Color(0xFFE1BEE7), // tím nhạt
-            Color(0xFFFFFFFF)  // trắng
+            Color(0xFFF8BBD0),
+            Color(0xFFE1BEE7),
+            Color(0xFFFFFFFF)
         ),
         startY = 0f,
         endY = Float.POSITIVE_INFINITY
@@ -89,12 +92,16 @@ fun HomeScreen(
                                 color = Color(0xFF6A1B9A)
                             )
                         }
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Avatar",
-                            tint = Color(0xFF9C27B0),
-                            modifier = Modifier.size(48.dp)
-                        )
+
+                        // --- 2. SỬA AVATAR THÀNH NÚT BẤM MỞ DIALOG ---
+                        IconButton(onClick = { showProfileDialog = true }) {
+                            Icon(
+                                imageVector = Icons.Default.AccountCircle,
+                                contentDescription = "Avatar",
+                                tint = Color(0xFF9C27B0),
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
                     }
                 }
 
@@ -200,7 +207,7 @@ fun HomeScreen(
                     }
                 }
 
-                // Biểu đồ thu chi (7 GD gần nhất) - Dạng đường cong mượt
+                // Biểu đồ thu chi (7 GD gần nhất)
                 item {
                     Card(
                         modifier = Modifier
@@ -247,28 +254,15 @@ fun HomeScreen(
                                 Canvas(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(200.dp)
+                                        .height(120.dp)
                                 ) {
                                     val values = recentTransactions.map { it.amount.toFloat() }
                                     val maxValue = values.maxOrNull() ?: 1f
                                     val count = values.size
                                     val stepX = size.width / (count - 1)
                                     val topPadding = 30f
-                                    val bottomPadding = 20f
-                                    val chartHeight = size.height - topPadding - bottomPadding
+                                    val chartHeight = size.height - topPadding - 20f
 
-                                    // Vẽ lưới ngang
-                                    for (i in 0..4) {
-                                        val y = topPadding + (i * chartHeight / 4)
-                                        drawLine(
-                                            color = Color(0xFFE0E0E0),
-                                            start = Offset(0f, y),
-                                            end = Offset(size.width, y),
-                                            strokeWidth = 1f
-                                        )
-                                    }
-
-                                    // Tạo các điểm dữ liệu
                                     val points = mutableListOf<Offset>()
                                     for (i in 0 until count) {
                                         val x = i * stepX
@@ -276,7 +270,6 @@ fun HomeScreen(
                                         points.add(Offset(x, y))
                                     }
 
-                                    // Vẽ đường cong nối các điểm (cubic bezier)
                                     val path = Path()
                                     if (points.isNotEmpty()) {
                                         path.moveTo(points[0].x, points[0].y)
@@ -284,47 +277,11 @@ fun HomeScreen(
                                             val p0 = points[i]
                                             val p1 = points[i + 1]
                                             val cp1x = p0.x + (p1.x - p0.x) / 2
-                                            val cp1y = p0.y
-                                            val cp2x = p1.x - (p1.x - p0.x) / 2
-                                            val cp2y = p1.y
-                                            path.cubicTo(cp1x, cp1y, cp2x, cp2y, p1.x, p1.y)
+                                            path.cubicTo(cp1x, p0.y, cp1x, p1.y, p1.x, p1.y)
                                         }
                                     }
-                                    drawPath(
-                                        path = path,
-                                        color = Color(0xFF9C27B0),
-                                        style = Stroke(width = 2.5f)
-                                    )
-
-                                    // Vẽ các điểm tròn
-                                    points.forEachIndexed { index, point ->
-                                        val pointColor = if (recentTransactions[index].type.equals("income", ignoreCase = true))
-                                            Color(0xFF4CAF50) else Color(0xFFF44336)
-                                        drawCircle(
-                                            color = Color.White,
-                                            radius = 7f,
-                                            center = point
-                                        )
-                                        drawCircle(
-                                            color = pointColor,
-                                            radius = 5f,
-                                            center = point
-                                        )
-                                    }
-                                }
-                                // Chú thích
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Box(Modifier.size(12.dp).background(Color(0xFF4CAF50), RoundedCornerShape(4.dp)))
-                                    Spacer(Modifier.width(4.dp))
-                                    Text("Thu", fontSize = 12.sp, color = Color(0xFF4CAF50))
-                                    Spacer(Modifier.width(12.dp))
-                                    Box(Modifier.size(12.dp).background(Color(0xFFF44336), RoundedCornerShape(4.dp)))
-                                    Spacer(Modifier.width(4.dp))
-                                    Text("Chi", fontSize = 12.sp, color = Color(0xFFF44336))
+                                    drawPath(path = path, color = Color(0xFF9C27B0), style = Stroke(width = 3f))
+                                    points.forEach { drawCircle(Color(0xFF9C27B0), radius = 6f, center = it) }
                                 }
                             }
                         }
@@ -346,64 +303,73 @@ fun HomeScreen(
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF4A148C)
                         )
-                        TextButton(
-                            onClick = { navController.navigate("report") }
-                        ) {
+                        TextButton(onClick = { navController.navigate("report") }) {
                             Text("Xem tất cả", color = Color(0xFF9C27B0))
-                            Icon(Icons.Default.ChevronRight, null, modifier = Modifier.size(18.dp), tint = Color(0xFF9C27B0))
                         }
                     }
                 }
 
                 if (transactions.isEmpty()) {
                     item {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                                .shadow(4.dp, RoundedCornerShape(20.dp)),
-                            shape = RoundedCornerShape(20.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(32.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Receipt,
-                                    contentDescription = "No transaction",
-                                    tint = Color(0xFFCE93D8),
-                                    modifier = Modifier.size(48.dp)
-                                )
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Text(
-                                    text = "Chưa có dữ liệu giao dịch",
-                                    color = Color(0xFF8E24AA),
-                                    fontSize = 16.sp
-                                )
-                                Text(
-                                    text = "Hãy thêm giao dịch mới bên dưới",
-                                    color = Color(0xFFBA68C8),
-                                    fontSize = 14.sp
-                                )
-                            }
-                        }
+                        Text(
+                            "Chưa có dữ liệu",
+                            modifier = Modifier.padding(20.dp),
+                            color = Color.Gray
+                        )
                     }
                 } else {
                     items(transactions.take(5)) { transaction ->
                         Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                            TransactionItem(
-                                transaction = transaction,
-                                formatter = formatter
-                            )
+                            TransactionItem(transaction = transaction, formatter = formatter)
                         }
                     }
                 }
-
-                item { Spacer(modifier = Modifier.height(20.dp)) }
             }
         }
+    }
+
+    // --- 3. HIỂN THỊ HỘP THOẠI THÔNG TIN VÀ ĐĂNG XUẤT ---
+    if (showProfileDialog) {
+        AlertDialog(
+            onDismissRequest = { showProfileDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFF9C27B0))
+                    Spacer(Modifier.width(8.dp))
+                    Text(text = "Tài khoản của tôi", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                }
+            },
+            text = {
+                Column {
+                    Text(text = "Email đăng nhập:", fontSize = 14.sp, color = Color.Gray)
+                    Text(text = userEmail, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Divider()
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(text = "Phiên bản ứng dụng: 1.0.0", fontSize = 12.sp, color = Color.LightGray)
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showProfileDialog = false
+                        auth.signOut()
+                        navController.navigate("login") {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE91E63))
+                ) {
+                    Text("Đăng xuất", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showProfileDialog = false }) {
+                    Text("Đóng")
+                }
+            }
+        )
     }
 }
