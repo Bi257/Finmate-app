@@ -1,30 +1,29 @@
 package com.example.baitapdidongcuoiki.ui.screen.login
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState // Thêm dòng này
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll // Thêm dòng này
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-// Thêm 2 dòng này vào nhóm các dòng import đầu file
-import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
-import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
+import com.example.baitapdidongcuoiki.R
 
-// Bảng màu đồng bộ
 val MyPurple = Color(0xFF9C27B0)
 val MyPink = Color(0xFFE91E63)
 val MyLightPurple = Color(0xFFF3E5F5)
@@ -33,13 +32,24 @@ val MyGradient = Brush.linearGradient(colors = listOf(Color(0xFFE91E63), Color(0
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(viewModel: LoginViewModel, navController: NavController) {
-    // Surface bao phủ toàn bộ để xóa vạch trắng hệ thống
+
+    LaunchedEffect(viewModel.loginStatus) {
+        if (viewModel.loginStatus.contains("thành công", ignoreCase = true)) {
+            navController.navigate("home") {
+                popUpTo("login") { inclusive = true }
+            }
+        }
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MyLightPurple
     ) {
+        // GIẢI PHÁP: Thêm verticalScroll để có thể vuốt lên thấy nút đăng ký
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -48,25 +58,22 @@ fun LoginScreen(viewModel: LoginViewModel, navController: NavController) {
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Logo & Brand
-                Box(
-                    modifier = Modifier
-                        .size(120.dp), // Tăng kích thước lên một chút để thấy rõ khung kim loại
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
+                Image(
+                    painter = painterResource(id = R.drawable.login),
+                    contentDescription = "FinMate",
+                    modifier = Modifier.size(100.dp) // Giảm size logo một chút cho đỡ chật
+                )
 
-                        painter = painterResource(id = com.example.baitapdidongcuoiki.R.drawable.login),
-                        contentDescription = "FinMate",
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                Spacer(modifier = Modifier.height(12.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "FinMate",
+                    color = MyPurple.copy(alpha = 0.8f),
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
 
-                Text(text = "FinMate", color = MyPurple.copy(alpha = 0.8f), fontSize = 30.sp, fontWeight = FontWeight.ExtraBold)
-
-                Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(24.dp)) // Giảm khoảng cách này xuống
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -75,12 +82,18 @@ fun LoginScreen(viewModel: LoginViewModel, navController: NavController) {
                     elevation = CardDefaults.cardElevation(8.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(28.dp),
+                        modifier = Modifier.padding(24.dp), // Giảm padding card cho gọn
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = "Đăng nhập", color = MyPurple, fontSize = 24.sp, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.Start))
+                        Text(
+                            text = "Đăng nhập",
+                            color = MyPurple,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.align(Alignment.Start)
+                        )
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
 
                         OutlinedTextField(
                             value = viewModel.username,
@@ -89,11 +102,10 @@ fun LoginScreen(viewModel: LoginViewModel, navController: NavController) {
                             leadingIcon = { Icon(Icons.Default.Person, null, tint = MyPurple.copy(0.4f)) },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
-                            singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MyPurple, unfocusedBorderColor = MyLightPurple)
+                            singleLine = true
                         )
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         OutlinedTextField(
                             value = viewModel.password,
@@ -103,29 +115,39 @@ fun LoginScreen(viewModel: LoginViewModel, navController: NavController) {
                             visualTransformation = PasswordVisualTransformation(),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
-                            singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MyPurple, unfocusedBorderColor = MyLightPurple)
+                            singleLine = true
                         )
 
-                        Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
 
-                        Button(
-                            onClick = {
-                                viewModel.onLoginClick()
-                                if (viewModel.loginStatus.contains("thành công")) {
-                                    navController.navigate("home") { popUpTo("login") { inclusive = true } }
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth().height(56.dp).background(MyGradient, RoundedCornerShape(16.dp)),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+                        // Nút Đăng nhập - Sửa lại cách bọc background để luôn hiện màu
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .background(MyGradient, RoundedCornerShape(16.dp)),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text("ĐĂNG NHẬP", color = Color.White, fontWeight = FontWeight.ExtraBold)
+                            Button(
+                                onClick = { viewModel.onLoginClick() },
+                                modifier = Modifier.fillMaxSize(),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+                            ) {
+                                Text("ĐĂNG NHẬP", color = Color.White, fontWeight = FontWeight.ExtraBold)
+                            }
                         }
 
+                        Spacer(modifier = Modifier.height(12.dp))
+
                         // Nút chuyển sang Đăng ký
-                        TextButton(onClick = { navController.navigate("register") }) {
-                            Text("Chưa có tài khoản? Đăng ký ngay", color = MyPurple)
+                        TextButton(
+                            onClick = { navController.navigate("register") },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row {
+                                Text("Chưa có tài khoản? ", color = Color.Gray)
+                                Text("Đăng ký ngay", color = MyPurple, fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
                 }
