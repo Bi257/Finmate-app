@@ -4,26 +4,41 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.baitapdidongcuoiki.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor() : ViewModel() {
+class LoginViewModel @Inject constructor(
+    // 1. Phải Inject AuthRepository vào đây
+    private val authRepository: AuthRepository
+) : ViewModel() {
 
-    // Sử dụng 'by' để truy cập trực tiếp giá trị biến thay vì .value
-    var username by mutableStateOf("")
+    var username by mutableStateOf("") // Đây chính là Email
     var password by mutableStateOf("")
     var loginStatus by mutableStateOf("")
 
     fun onLoginClick() {
         if (username.isBlank() || password.isBlank()) {
             loginStatus = "Vui lòng nhập đầy đủ tài khoản và mật khẩu!"
-        } else {
-            // Giả lập logic đăng nhập
-            if (username == "admin" && password == "123") {
+            return
+        }
+
+        // 2. Sử dụng viewModelScope để chạy hàm suspend (bất đồng bộ)
+        viewModelScope.launch {
+            loginStatus = "Đang kiểm tra thông tin..."
+
+            // 3. Gọi hàm login thật từ AuthRepository
+            val result = authRepository.login(username, password)
+
+            if (result.isSuccess) {
                 loginStatus = "Đăng nhập thành công!"
             } else {
-                loginStatus = "Sai tài khoản hoặc mật khẩu!"
+                // Hiển thị lỗi thật từ Firebase (ví dụ: User not found hoặc Wrong password)
+                val message = result.exceptionOrNull()?.message ?: "Sai tài khoản hoặc mật khẩu!"
+                loginStatus = "Lỗi: $message"
             }
         }
     }
