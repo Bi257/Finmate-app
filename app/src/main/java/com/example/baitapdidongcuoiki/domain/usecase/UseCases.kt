@@ -7,7 +7,8 @@ data class UseCases(
     val addTransactionUseCase: AddTransactionUseCase,
 
     // Tax
-    val calculateTaxUseCase: CalculateTaxUseCase
+    val calculateTaxUseCase: CalculateTaxUseCase,
+    val refreshTransactionsUseCase: RefreshTransactionsUseCase
 ) {
 
     // Wrapper cho tax

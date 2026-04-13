@@ -98,7 +98,7 @@ fun LoginScreen(viewModel: LoginViewModel, navController: NavController) {
                         OutlinedTextField(
                             value = viewModel.username,
                             onValueChange = { viewModel.username = it },
-                            placeholder = { Text("Tên tài khoản") },
+                            placeholder = { Text("Email") },
                             leadingIcon = { Icon(Icons.Default.Person, null, tint = MyPurple.copy(0.4f)) },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
