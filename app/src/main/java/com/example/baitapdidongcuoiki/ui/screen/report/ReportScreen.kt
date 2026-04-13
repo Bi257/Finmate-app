@@ -4,8 +4,8 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,7 +24,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.baitapdidongcuoiki.export.ExcelExporter
 import com.example.baitapdidongcuoiki.export.PdfExporter
 import com.example.baitapdidongcuoiki.ui.DailyMarketViewModel
-import com.example.baitapdidongcuoiki.ui.components.TransactionItem
 import com.example.baitapdidongcuoiki.ui.screen.home.HomeViewModel
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
@@ -60,17 +60,31 @@ fun ReportScreen(
     var expanded by remember { mutableStateOf(false) }
     val currencyOptions = listOf("USD", "EUR", "JPY", "Vàng (PAXG/lượng)")
 
+    // Lấy tỷ giá từ state
     val usdRate = marketState.rates.find { it.currency == "USD" }?.buy ?: 0.0
     val eurRate = marketState.rates.find { it.currency == "EUR" }?.buy ?: 0.0
     val jpyRate = marketState.rates.find { it.currency == "JPY" }?.buy ?: 0.0
     val goldPrice = marketState.goldPricePerLuongVnd
+
+    // Tính toán kết quả quy đổi tự động
+    val conversionResult = remember(inputAmount, selectedCurrency, marketState) {
+        val amount = inputAmount.toDoubleOrNull() ?: 0.0
+        val rate = when (selectedCurrency) {
+            "USD" -> usdRate
+            "EUR" -> eurRate
+            "JPY" -> jpyRate
+            "Vàng (PAXG/lượng)" -> goldPrice
+            else -> 0.0
+        }
+        amount * rate
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().background(NenNhat),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // ========== PHẦN 1: THỊ TRƯỜNG ==========
+        // ========== PHẦN 1: THỊ TRƯỜNG & TỶ GIÁ ==========
         item {
             Column {
                 Text("Thị trường", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MauTim)
@@ -102,19 +116,22 @@ fun ReportScreen(
                         Text("Vàng: ${numberFormatter.format(goldPrice)} VND", fontWeight = FontWeight.Medium)
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     Text("Quy đổi nhanh", fontWeight = FontWeight.Bold, color = MauTim, fontSize = 14.sp)
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                         OutlinedTextField(
                             value = inputAmount,
                             onValueChange = { inputAmount = it },
                             label = { Text("Số lượng") },
                             modifier = Modifier.weight(1f),
-                            singleLine = true
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                         )
-                        Box(Modifier.weight(1f)) {
+                        Box(Modifier.weight(0.8f)) {
                             Button(onClick = { expanded = true }, colors = ButtonDefaults.buttonColors(containerColor = MauTim)) {
-                                Text(selectedCurrency, color = MauTrang, fontSize = 12.sp)
+                                Text(selectedCurrency, color = MauTrang, fontSize = 11.sp, maxLines = 1)
                             }
                             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                                 currencyOptions.forEach { option ->
@@ -123,11 +140,33 @@ fun ReportScreen(
                             }
                         }
                     }
+
+                    // HIỂN THỊ KẾT QUẢ QUY ĐỔI SAU KHI NHẬP TIỀN
+                    if (inputAmount.isNotEmpty() && conversionResult > 0) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MauTim.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                                .padding(12.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.SyncAlt, contentDescription = null, tint = MauTim, modifier = Modifier.size(20.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "= ${currencyFormatter.format(conversionResult)}",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = MauTim
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        // ========== PHẦN 2: XUẤT BÁO CÁO (ĐÃ SỬA) ==========
+        // ========== PHẦN 2: XUẤT FILE BÁO CÁO ==========
         item {
             Text("Xuất báo cáo tài chính", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MauTim)
         }
@@ -148,7 +187,7 @@ fun ReportScreen(
                     }
                 )
 
-                // 2. Quyết toán Thuế TNCN (PDF - Sửa để gọi ReportType.TAX)
+                // 2. Quyết toán Thuế TNCN (PDF)
                 ExportCard(
                     title = "Quyết toán Thuế TNCN",
                     description = "Dự toán thuế & Giảm trừ gia cảnh (PDF)",
@@ -157,7 +196,7 @@ fun ReportScreen(
                     onClick = { showTaxDialog = true }
                 )
 
-                // 3. Phân tích biến động (PDF - Sửa để gọi ReportType.ANALYSIS)
+                // 3. Phân tích biến động (PDF)
                 ExportCard(
                     title = "Phân tích biến động",
                     description = "Biểu đồ xu hướng và tỷ lệ (PDF)",
@@ -165,7 +204,6 @@ fun ReportScreen(
                     color = Color(0xFF2196F3),
                     onClick = {
                         try {
-                            // GỌI HÀM VỚI TYPE ANALYSIS
                             PdfExporter.export(
                                 context = context,
                                 transactions = transactions,
@@ -178,36 +216,26 @@ fun ReportScreen(
             }
         }
 
-        // ========== PHẦN 3: CHI TIẾT GIAO DỊCH ==========
-        item {
-            Text("Chi tiết gần đây", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MauTim)
-        }
+        // Đã xóa phần "Chi tiết gần đây" tại đây để màn hình gọn gàng hơn
 
-        if (transactions.isEmpty()) {
-            item { Text("Chưa có dữ liệu", modifier = Modifier.padding(20.dp), color = Color.Gray) }
-        } else {
-            items(transactions.take(10)) { transaction ->
-                TransactionItem(transaction = transaction, formatter = currencyFormatter)
-            }
-        }
-
-        item { Spacer(modifier = Modifier.height(80.dp)) }
+        item { Spacer(modifier = Modifier.height(100.dp)) }
     }
 
-    // --- DIALOG NHẬP NGƯỜI PHỤ THUỘC (ĐÃ SỬA) ---
+    // --- DIALOG NHẬP NGƯỜI PHỤ THUỘC ---
     if (showTaxDialog) {
         AlertDialog(
             onDismissRequest = { showTaxDialog = false },
             title = { Text("Cấu hình Thuế TNCN", fontWeight = FontWeight.Bold) },
             text = {
                 Column {
-                    Text("Nhập số người phụ thuộc để tính giảm trừ gia cảnh (4.4tr/người):", fontSize = 14.sp)
+                    Text("Nhập số người phụ thuộc (giảm trừ 4.4tr/người):", fontSize = 14.sp)
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
                         value = dependentCount,
                         onValueChange = { if (it.all { char -> char.isDigit() }) dependentCount = it },
                         label = { Text("Số người") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
                 }
             },
@@ -216,7 +244,6 @@ fun ReportScreen(
                     onClick = {
                         showTaxDialog = false
                         try {
-                            // GỌI HÀM VỚI TYPE TAX VÀ TRUYỀN SỐ NGƯỜI PHỤ THUỘC
                             PdfExporter.export(
                                 context = context,
                                 transactions = transactions,
@@ -225,7 +252,7 @@ fun ReportScreen(
                             )
                             Toast.makeText(context, "Đã xuất báo cáo thuế!", Toast.LENGTH_SHORT).show()
                         } catch (e: Exception) {
-                            Toast.makeText(context, "Lỗi xuất thuế: ${e.message}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Lỗi: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MauTim)
