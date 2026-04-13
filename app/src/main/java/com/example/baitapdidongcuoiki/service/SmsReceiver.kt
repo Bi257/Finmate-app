@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Telephony
 import android.util.Log
+import com.example.baitapdidongcuoiki.data.local.AppDatabase
+import com.example.baitapdidongcuoiki.data.local.entity.SmsMessageEntity
 import com.example.baitapdidongcuoiki.data.repository.ExchangeRepository
 import com.example.baitapdidongcuoiki.domain.model.Transaction
 import com.example.baitapdidongcuoiki.domain.usecase.UseCases
@@ -32,23 +34,46 @@ class SmsReceiver : BroadcastReceiver() {
         for (sms in messages) {
             val sender = sms.originatingAddress ?: "Unknown"
             val body = sms.messageBody ?: ""
+            val timestamp = sms.timestampMillis ?: System.currentTimeMillis()
+            val smsId = timestamp
 
             Log.d("SMS_RAW", "[$sender] $body")
 
-            val draft = parseBankSms(sender, body) ?: continue
-
+            // Lưu tin nhắn vào database (bất kể nội dung gì)
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    val (tx, logLine) = draft.toTransactionWithConversion(exchangeRepository)
-                    useCases.addTransactionUseCase(tx)
-                    Log.d("SMS_SUCCESS", logLine)
+                    val db = AppDatabase.getInstance(context)
+                    val entity = SmsMessageEntity(
+                        id = smsId,
+                        address = sender,
+                        body = body,
+                        date = timestamp
+                    )
+                    db.smsMessageDao().insert(entity)
+                    Log.d("SMS_SAVE", "✅ Đã lưu tin nhắn: ${body.take(50)}")
                 } catch (e: Exception) {
-                    Log.e("SMS_ERROR", "Lỗi: ${e.message}", e)
+                    Log.e("SMS_SAVE_ERROR", "❌ Lỗi lưu tin nhắn: ${e.message}", e)
+                }
+            }
+
+            // Xử lý tạo giao dịch nếu là tin nhắn ngân hàng
+            val draft = parseBankSms(sender, body)
+            if (draft != null) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val (tx, logLine) = draft.toTransactionWithConversion(exchangeRepository)
+                        useCases.addTransactionUseCase(tx)
+                        useCases.refreshTransactionsUseCase.invoke()
+                        Log.d("SMS_SUCCESS", logLine)
+                    } catch (e: Exception) {
+                        Log.e("SMS_ERROR", "Lỗi tạo giao dịch: ${e.message}", e)
+                    }
                 }
             }
         }
     }
 
+    // Các hàm parse... giữ nguyên như cũ
     private data class BankSmsDraft(
         val title: String,
         val amountRaw: Double,
@@ -119,24 +144,19 @@ class SmsReceiver : BroadcastReceiver() {
         val usdAmount = parseUsdAmount(body)
         if (usdAmount != null && looksLikeBankOrBalanceSms(lower)) {
             val isIncome = lower.contains("+") ||
-                lower.contains("nhận") ||
-                lower.contains("credit") ||
-                lower.contains("tiền vào") ||
-                lower.contains("deposit") ||
-                lower.contains("hoàn tiền")
-
+                    lower.contains("nhận") ||
+                    lower.contains("credit") ||
+                    lower.contains("tiền vào") ||
+                    lower.contains("deposit") ||
+                    lower.contains("hoàn tiền")
             val type = if (isIncome) "income" else "expense"
-            val noteRegex =
-                Regex("""(?:ND|Noi dung|nội dung|Content)[:\s]*(.*)""", RegexOption.IGNORE_CASE)
+            val noteRegex = Regex("""(?:ND|Noi dung|nội dung|Content)[:\s]*(.*)""", RegexOption.IGNORE_CASE)
             val extractedContent = noteRegex.find(body)?.groupValues?.getOrNull(1)?.trim()
             val category = detectCategory(body, type)
             val account = Regex("""\b\d{3,6}\b""").find(body)?.value ?: "Bank"
             val balance = Regex("""(?:số dư|so du|balance)[:\s]*([\d.,\s]+(?:USD|usd|VND|vnd)?)""", RegexOption.IGNORE_CASE)
                 .find(body)?.groupValues?.getOrNull(1)
-
-            val title = if (!extractedContent.isNullOrBlank()) extractedContent
-            else "$category - $sender"
-
+            val title = if (!extractedContent.isNullOrBlank()) extractedContent else "$category - $sender"
             val note = buildString {
                 append("Tài khoản: $account")
                 balance?.let { append(" | Số dư: $it") }
@@ -145,9 +165,7 @@ class SmsReceiver : BroadcastReceiver() {
             return BankSmsDraft(title, usdAmount, isUsd = true, type, note)
         }
 
-        val bankKeywords = listOf(
-            "số dư", "so du", "tk", "tai khoan", "chuyển khoản", "credit", "debit", "vnd", "vcb", "bidv"
-        )
+        val bankKeywords = listOf("số dư", "so du", "tk", "tai khoan", "chuyển khoản", "credit", "debit", "vnd", "vcb", "bidv")
         if (bankKeywords.none { lower.contains(it) }) return null
 
         val amount = Regex("""([+-]?\d{1,3}(?:[.,]\d{3})+)""")
@@ -159,27 +177,18 @@ class SmsReceiver : BroadcastReceiver() {
             ?.replace(".", "")
             ?.toDoubleOrNull() ?: return null
 
-        val isIncome = lower.contains("+") ||
-            lower.contains("nhận") ||
-            lower.contains("ghi có") ||
-            lower.contains("tiền vào") ||
-            lower.contains("hoàn tiền")
-
+        val isIncome = lower.contains("+") || lower.contains("nhận") || lower.contains("ghi có") || lower.contains("tiền vào") || lower.contains("hoàn tiền")
         val type = if (isIncome) "income" else "expense"
-
         val noteRegex = Regex("""(?:ND|Noi dung|nội dung|Content)[:\s]*(.*)""", RegexOption.IGNORE_CASE)
         val extractedContent = noteRegex.find(body)?.groupValues?.getOrNull(1)?.trim()
-
         val category = detectCategory(body, type)
-
         val account = Regex("""\b\d{3,6}\b""").find(body)?.value ?: "Bank"
         val balance = Regex("""(?:số dư|so du)[:\s]*([\d.,]+)""", RegexOption.IGNORE_CASE)
             .find(body)?.groupValues?.getOrNull(1)
-
         val title = if (!extractedContent.isNullOrBlank()) extractedContent else "$category - $sender"
         val note = buildString {
             append("Tài khoản: $account")
-            balance?.let { append(" | Số dư: $it VND") }
+            balance?.let { append(" | Số dư: $balance VND") }
             append(" | Gốc: $body")
         }
         return BankSmsDraft(title, amount, isUsd = false, type, note)

@@ -3,22 +3,19 @@ package com.example.baitapdidongcuoiki.data.repository
 import com.example.baitapdidongcuoiki.domain.model.Transaction
 import com.example.baitapdidongcuoiki.domain.repository.TransactionRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.flowOf
 
 class FakeTransactionRepository : TransactionRepository {
-
-    private val _data = MutableStateFlow<List<Transaction>>(emptyList())
+    override suspend fun addTransaction(transaction: Transaction) {
+        // fake: không làm gì
+    }
 
     override fun getTransactions(): Flow<List<Transaction>> {
-        return _data.asStateFlow()
+        return flowOf(emptyList())
     }
 
-    override suspend fun addTransaction(transaction: Transaction) {
-        _data.update { currentList ->
-            currentList + transaction
-        }
+    override suspend fun refreshTransactions() {
+        // 👈 THÊM DÒNG NÀY
+        // fake: không cần xử lý
     }
-
 }

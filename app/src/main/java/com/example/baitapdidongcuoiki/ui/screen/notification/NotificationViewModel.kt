@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.net.Uri
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,6 +15,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -31,26 +33,27 @@ class NotificationViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _smsMessages = MutableStateFlow<List<SmsMessage>>(emptyList())
-    val smsMessages: StateFlow<List<SmsMessage>> = _smsMessages
+    val smsMessages: StateFlow<List<SmsMessage>> = _smsMessages.asStateFlow()
 
     init {
-        loadSmsMessages()
+        loadSmsDirectly()
     }
 
-    private fun loadSmsMessages() {
+    private fun loadSmsDirectly() {
         viewModelScope.launch {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) {
+                Log.e("NotificationVM", "Không có quyền READ_SMS")
+                return@launch
+            }
             val messages = withContext(Dispatchers.IO) {
-                if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED) {
-                    readAllSms(context.contentResolver)
-                } else {
-                    emptyList()
-                }
+                readAllSmsFromProvider(context.contentResolver)
             }
             _smsMessages.value = messages
+            Log.d("NotificationVM", "Loaded ${messages.size} messages directly")
         }
     }
 
-    private fun readAllSms(contentResolver: ContentResolver): List<SmsMessage> {
+    private fun readAllSmsFromProvider(contentResolver: ContentResolver): List<SmsMessage> {
         val messages = mutableListOf<SmsMessage>()
         val uri = Uri.parse("content://sms/inbox")
         val cursor: Cursor? = contentResolver.query(uri, null, null, null, "date DESC")
@@ -71,6 +74,6 @@ class NotificationViewModel @Inject constructor(
     }
 
     fun refresh() {
-        loadSmsMessages()
+        loadSmsDirectly()
     }
 }

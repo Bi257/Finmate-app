@@ -20,10 +20,10 @@ class TransactionRepositoryImpl @Inject constructor(
 ) : TransactionRepository {
 
     override suspend fun addTransaction(transaction: Transaction) {
-        // 1. Lưu vào Room
+        // 1. Lưu vào Room (local cache)
         dao.insert(transaction.toEntity())
 
-        // 2. Đẩy lên Cloud Firestore
+        // 2. Đẩy lên Firestore
         try {
             val userId = auth.currentUser?.uid
             if (userId != null) {
@@ -33,9 +33,8 @@ class TransactionRepositoryImpl @Inject constructor(
                     "type" to transaction.type,
                     "date" to transaction.date,
                     "note" to transaction.note,
-                    "createdAt" to System.currentTimeMillis() // Để sắp xếp thời gian
+                    "createdAt" to System.currentTimeMillis()
                 )
-
                 firestore.collection("users")
                     .document(userId)
                     .collection("transactions")
@@ -49,14 +48,12 @@ class TransactionRepositoryImpl @Inject constructor(
 
     override fun getTransactions(): Flow<List<Transaction>> = callbackFlow {
         val userId = auth.currentUser?.uid
-
         if (userId == null) {
             trySend(emptyList())
             close()
             return@callbackFlow
         }
 
-        // Lắng nghe dữ liệu của đúng User này trên Firestore
         val subscription = firestore.collection("users")
             .document(userId)
             .collection("transactions")
@@ -65,10 +62,8 @@ class TransactionRepositoryImpl @Inject constructor(
                     close(error)
                     return@addSnapshotListener
                 }
-
                 if (snapshot != null) {
                     val transactions = snapshot.documents.mapNotNull { doc ->
-                        // Chuyển dữ liệu từ Firebase về Model Transaction
                         Transaction(
                             title = doc.getString("title") ?: "",
                             amount = doc.getDouble("amount") ?: 0.0,
@@ -80,7 +75,28 @@ class TransactionRepositoryImpl @Inject constructor(
                     trySend(transactions)
                 }
             }
-
         awaitClose { subscription.remove() }
+    }
+
+    // 👇 THÊM HÀM NÀY ĐỂ REFRESH (BUỘC LOAD LẠI TỪ ROOM HOẶC FIRESTORE)
+    override suspend fun refreshTransactions() {
+        // Không cần làm gì vì callbackFlow tự động, nhưng để đảm bảo, có thể đọc từ Firestore một lần
+        val userId = auth.currentUser?.uid ?: return
+        val snapshot = firestore.collection("users")
+            .document(userId)
+            .collection("transactions")
+            .get()
+            .await()
+        val transactions = snapshot.documents.mapNotNull { doc ->
+            Transaction(
+                title = doc.getString("title") ?: "",
+                amount = doc.getDouble("amount") ?: 0.0,
+                type = doc.getString("type") ?: "",
+                date = doc.getLong("date") ?: 0L,
+                note = doc.getString("note") ?: ""
+            )
+        }
+        // Cập nhật cache Room (tùy chọn)
+        // dao.clearAndInsertAll(transactions.map { it.toEntity() })
     }
 }

@@ -84,10 +84,17 @@ class HomeViewModel @Inject constructor(
     }
 
     fun refresh() {
+        viewModelScope.launch {
+            useCases.refreshTransactionsUseCase.invoke()
+            // Sau đó observeTransactions sẽ tự động cập nhật vì Flow đang lắng nghe
+        }
+    }
+
+    /*fun refresh() {
         syncWithBackend()
         // Gọi lại để đảm bảo dữ liệu mới nhất
         observeTransactions()
-    }
+    }*/
 
     fun addTransaction(title: String, amount: Double, type: String, note: String = "") {
         viewModelScope.launch {

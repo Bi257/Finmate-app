@@ -24,6 +24,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.text.SimpleDateFormat
 import java.util.*
+import android.util.Log
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,9 +32,18 @@ fun NotificationScreen(
     viewModel: NotificationViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val smsList by viewModel.smsMessages.collectAsStateWithLifecycle(initialValue = emptyList())
+    val smsList by viewModel.smsMessages.collectAsStateWithLifecycle()
     val hasSmsPermission = remember {
         ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED
+    }
+
+    LaunchedEffect(Unit) {
+        Log.d("NotificationScreen", "Screen launched, calling refresh")
+        viewModel.refresh()
+    }
+
+    LaunchedEffect(smsList) {
+        Log.d("NotificationScreen", "smsList size = ${smsList.size}")
     }
 
     Scaffold(
@@ -108,7 +118,6 @@ fun NotificationScreen(
                                 .padding(32.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            // ✅ SỬA LỖI: thay Icons.Default.Sms bằng Icons.Default.Message
                             Icon(
                                 Icons.Default.Message,
                                 contentDescription = null,
@@ -146,7 +155,8 @@ fun NotificationScreen(
                                 text = sms.body,
                                 fontSize = 13.sp,
                                 color = Color(0xFF6A1B9A),
-                                maxLines = 3
+                                maxLines = 3,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
                             Text(
                                 text = SimpleDateFormat("HH:mm dd/MM/yyyy", Locale.getDefault()).format(Date(sms.date)),
