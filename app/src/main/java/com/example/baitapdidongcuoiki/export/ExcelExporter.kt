@@ -1,6 +1,8 @@
 package com.example.baitapdidongcuoiki.export
 
 import android.content.Context
+import android.os.Environment
+import android.util.Log
 import com.example.baitapdidongcuoiki.domain.model.Transaction
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.File
@@ -60,10 +62,19 @@ object ExcelExporter {
             val widths = intArrayOf(6, 28, 14, 16, 20, 32)
             widths.forEachIndexed { i, chars -> sheet.setColumnWidth(i, chars * 256) }
 
-            val fileName = "bao_cao_giao_dich_${System.currentTimeMillis()}.xlsx"
+            // --- SỬA LẠI ĐƯỜNG DẪN ĐỂ DỄ TÌM TRÊN DEVICE EXPLORER ---
+            val fileName = "BaoCao_ThuChi.xlsx"
+            // Lưu vào thư mục Files của App (Dễ nhìn thấy hơn trong Android Studio)
             val dir = context.getExternalFilesDir(null) ?: context.filesDir
+            if (!dir.exists()) dir.mkdirs()
+
             val file = File(dir, fileName)
+
             FileOutputStream(file).use { workbook.write(it) }
+
+            // Log đường dẫn để Ngân copy cho nhanh
+            Log.d("ExcelExporter", "File saved at: ${file.absolutePath}")
+
             return file
         }
     }
