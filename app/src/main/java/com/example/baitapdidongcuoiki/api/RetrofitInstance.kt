@@ -9,7 +9,8 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitInstance {
 
-    /** Frankfurter — JSON chuẩn, miễn phí (exchangerate-api.com v4 hay trả HTML → Gson lỗi). */
+
+
     private const val BASE_URL = "https://api.exchangerate.host/"
 
     private val userAgent = Interceptor { chain ->
@@ -19,9 +20,11 @@ object RetrofitInstance {
         chain.proceed(req)
     }
 
+
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BASIC
     }
+
 
     private val client = OkHttpClient.Builder()
         .addInterceptor(userAgent)
@@ -38,4 +41,5 @@ object RetrofitInstance {
             .build()
             .create(ExchangeApi::class.java)
     }
+
 }

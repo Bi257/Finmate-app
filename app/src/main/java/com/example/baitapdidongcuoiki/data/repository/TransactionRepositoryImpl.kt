@@ -78,9 +78,8 @@ class TransactionRepositoryImpl @Inject constructor(
         awaitClose { subscription.remove() }
     }
 
-    // 👇 THÊM HÀM NÀY ĐỂ REFRESH (BUỘC LOAD LẠI TỪ ROOM HOẶC FIRESTORE)
+
     override suspend fun refreshTransactions() {
-        // Không cần làm gì vì callbackFlow tự động, nhưng để đảm bảo, có thể đọc từ Firestore một lần
         val userId = auth.currentUser?.uid ?: return
         val snapshot = firestore.collection("users")
             .document(userId)
@@ -96,7 +95,11 @@ class TransactionRepositoryImpl @Inject constructor(
                 note = doc.getString("note") ?: ""
             )
         }
-        // Cập nhật cache Room (tùy chọn)
-        // dao.clearAndInsertAll(transactions.map { it.toEntity() })
     }
 }
+
+
+
+
+
+

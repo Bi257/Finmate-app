@@ -32,7 +32,10 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    // ROOM DATABASE
+
+
+
+
     @Provides
     @Singleton
     fun provideAppDatabase(app: Application): AppDatabase {
@@ -43,23 +46,39 @@ object AppModule {
         ).fallbackToDestructiveMigration().build()
     }
 
-    // DAOs
+
+
+
+
     @Provides
     @Singleton
     fun provideTransactionDao(db: AppDatabase): TransactionDao = db.transactionDao()
+
+
+
 
     @Provides
     @Singleton
     fun provideExchangeRateDao(db: AppDatabase): ExchangeRateDao = db.exchangeRateDao()
 
+
+
     @Provides
     @Singleton
     fun provideSmsMessageDao(db: AppDatabase): SmsMessageDao = db.smsMessageDao()
+
+
+
+
 
     // API
     @Provides
     @Singleton
     fun provideExchangeApi(): ExchangeApi = RetrofitInstance.api
+
+
+
+
 
     @Provides
     @Singleton
@@ -81,6 +100,9 @@ object AppModule {
             .build()
     }
 
+
+
+
     @Provides
     @Singleton
     fun provideBinanceApi(client: OkHttpClient): BinanceApi {
@@ -97,11 +119,17 @@ object AppModule {
     @Singleton
     fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
 
+
+
+
     @Provides
     @Singleton
     fun provideAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 
-    // REPOSITORIES
+
+
+
+
     @Provides
     @Singleton
     fun provideTransactionRepository(
@@ -112,17 +140,23 @@ object AppModule {
         return TransactionRepositoryImpl(dao, firestore, auth)
     }
 
+
+
     @Provides
     @Singleton
     fun provideExchangeRepository(api: ExchangeApi, dao: ExchangeRateDao): ExchangeRepository {
         return ExchangeRepository(api, dao)
     }
 
+
+
     @Provides
     @Singleton
     fun provideSmsRepository(dao: SmsMessageDao): SmsRepository {
         return SmsRepository(dao)
     }
+
+
 
     // USE CASES
     @Provides
@@ -131,11 +165,15 @@ object AppModule {
         return GetTransactionsUseCase(repository)
     }
 
+
+
     @Provides
     @Singleton
     fun provideAddTransactionUseCase(repository: TransactionRepository): AddTransactionUseCase {
         return AddTransactionUseCase(repository)
     }
+
+
 
     @Provides
     @Singleton
@@ -143,11 +181,15 @@ object AppModule {
         return CalculateTaxUseCase()
     }
 
+
+
     @Provides
     @Singleton
     fun provideRefreshTransactionsUseCase(repository: TransactionRepository): RefreshTransactionsUseCase {
         return RefreshTransactionsUseCase(repository)
     }
+
+
 
     @Provides
     @Singleton

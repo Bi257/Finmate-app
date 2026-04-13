@@ -7,8 +7,13 @@ import androidx.room.PrimaryKey
 data class SmsMessageEntity(
     @PrimaryKey
     val id: Long,
+
     val address: String?,
+
     val body: String,
+
     val date: Long,
+
     val createdAt: Long = System.currentTimeMillis()
+    
 )

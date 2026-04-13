@@ -14,6 +14,11 @@ fun Transaction.toEntity(): TransactionEntity {
         note = note
     )
 }
+
+
+
+
+
 fun TransactionEntity.toDomain(): Transaction {
     return Transaction(
         id = id,

@@ -11,21 +11,31 @@ class AuthRepository @Inject constructor(
 ) {
     suspend fun register(email: String, password: String): Result<Unit> {
         return try {
-            //gửi thông tin lên Firebase
+
             firebaseAuth.createUserWithEmailAndPassword(email, password).await()
             Result.success(Unit)
+
         } catch (e: Exception) {
-            // Trả về lỗi nếu đăng ký thất bại
             Result.failure(e)
         }
     }
 
     suspend fun login(email: String, password: String): Result<Unit> {
         return try {
+
             firebaseAuth.signInWithEmailAndPassword(email, password).await()
             Result.success(Unit)
+
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 }
+
+
+
+
+
+
+
+
