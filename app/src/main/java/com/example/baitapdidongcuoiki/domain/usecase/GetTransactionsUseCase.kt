@@ -10,6 +10,8 @@ class GetTransactionsUseCase @Inject constructor(
 ) {
 
     operator fun invoke(): Flow<List<Transaction>> {
+
         return repository.getTransactions()
+
     }
 }

@@ -29,11 +29,11 @@ class ReportViewModel @Inject constructor(
 
     private fun observeTransactions() {
 
-        useCases.getTransactionsUseCase() // ✅ FIX Ở ĐÂY
+        useCases.getTransactionsUseCase() //
             .onStart {
                 _state.update { it.copy(isLoading = true) }
             }
-            .map { list: List<Transaction> -> // ✅ FIX TYPE
+            .map { list: List<Transaction> -> //
 
                 val income = list
                     .filter { it.type.equals("income", true) }

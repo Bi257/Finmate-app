@@ -32,7 +32,7 @@ fun TransactionItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                // HIỂN THỊ NỘI DUNG (Ví dụ: Ăn sáng bánh mì)
+                // HIỂN THỊ NỘI DUNG
                 Text(
                     text = transaction.title,
                     style = MaterialTheme.typography.titleMedium,
@@ -42,7 +42,7 @@ fun TransactionItem(
 
                 Spacer(modifier = Modifier.height(2.dp))
 
-                // HIỂN THỊ THÔNG TIN NGÂN HÀNG (Ví dụ: Tài khoản: 123456)
+                // HIỂN THỊ THÔNG TIN NGÂN HÀNG
                 Text(
                     text = transaction.note,
                     style = MaterialTheme.typography.bodySmall,
@@ -61,3 +61,72 @@ fun TransactionItem(
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

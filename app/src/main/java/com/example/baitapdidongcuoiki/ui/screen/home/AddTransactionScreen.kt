@@ -89,7 +89,7 @@ fun AddTransactionScreen(
                             label = { Text("Tên giao dịch (VD: Ăn sáng)") },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
-                            colors = textFieldColors // Sử dụng biến màu đã sửa lỗi
+                            colors = textFieldColors
                         )
 
                         OutlinedTextField(
@@ -98,7 +98,7 @@ fun AddTransactionScreen(
                             label = { Text("Số tiền (VNĐ)") },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
-                            colors = textFieldColors // Sử dụng biến màu đã sửa lỗi
+                            colors = textFieldColors
                         )
                     }
                 }
@@ -111,14 +111,14 @@ fun AddTransactionScreen(
                         selected = type == "income",
                         onClick = { type = "income" },
                         label = "Thu nhập",
-                        selectedColor = Color(0xFF4CAF50), // Màu xanh thu nhập
+                        selectedColor = Color(0xFF4CAF50),
                         modifier = Modifier.weight(1f)
                     )
                     SelectableChip(
                         selected = type == "expense",
                         onClick = { type = "expense" },
                         label = "Chi tiêu",
-                        selectedColor = Color(0xFFD32F2F), // Màu đỏ chi tiêu
+                        selectedColor = Color(0xFFD32F2F),
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -175,3 +175,74 @@ fun SelectableChip(
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

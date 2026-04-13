@@ -22,33 +22,45 @@ import java.util.Locale
 
 object PdfExporter {
 
-    // Định nghĩa các loại báo cáo để tránh nhầm lẫn
+
+
+
     enum class ReportType { TAX, ANALYSIS }
 
     fun export(
         context: Context,
         transactions: List<Transaction>,
         dependentCount: Int = 0,
-        type: ReportType = ReportType.TAX // Mặc định là Thuế
+        type: ReportType = ReportType.TAX
     ): File {
 
-        // 1. Chuẩn bị dữ liệu và File
+
+
+
         val money = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
         val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
 
-        // Tên file thay đổi dựa theo loại báo cáo
+
         val fileName = if (type == ReportType.TAX) "BaoCao_Thue.pdf" else "BaoCao_BienDong.pdf"
         val dir = context.getExternalFilesDir(null) ?: context.filesDir
         val file = File(dir, fileName)
+
+
+
 
         val writer = PdfWriter(FileOutputStream(file))
         val pdf = PdfDocument(writer)
         val document = Document(pdf)
 
-        // 2. Load Font tiếng Việt (Arial)
+
+
+
         val font = loadVietnameseFont(context)
 
-        // 3. Header chung cho các báo cáo
+
+
+
+
         val titleText = if (type == ReportType.TAX) "BÁO CÁO QUYẾT TOÁN THUẾ" else "BÁO CÁO PHÂN TÍCH BIẾN ĐỘNG"
         document.add(
             Paragraph(titleText)
@@ -61,14 +73,20 @@ object PdfExporter {
         document.add(Paragraph("Ngày xuất: ${sdf.format(Date())}").setFont(font).setTextAlignment(TextAlignment.RIGHT).setFontSize(10f))
         document.add(Paragraph("\n"))
 
-        // 4. Vẽ nội dung dựa theo Loại báo cáo
+
+
+
+
         if (type == ReportType.TAX) {
             drawTaxContent(document, font, transactions, dependentCount, money)
         } else {
             drawAnalysisContent(document, font, transactions, money)
         }
 
-        // 5. Footer: Chi tiết giao dịch (Dùng chung)
+
+
+
+
         document.add(Paragraph("\n"))
         document.add(Paragraph("DANH SÁCH GIAO DỊCH GẦN ĐÂY").setFont(font).setBold())
         if (transactions.isEmpty()) {
@@ -84,6 +102,8 @@ object PdfExporter {
             }
         }
 
+
+
         document.close()
         Log.d("PdfExporter", "Đã xuất file: ${file.absolutePath}")
         return file
@@ -95,7 +115,9 @@ object PdfExporter {
         val giamTruBanThan = 11000000.0
         val giamTruPhuThuoc = dependents * 4400000.0
         val thuNhapTinhThue = maxOf(0.0, income - giamTruBanThan - giamTruPhuThuoc)
-        val thueDuKien = thuNhapTinhThue * 0.05 // Tạm tính 5%
+        val thueDuKien = thuNhapTinhThue * 0.05
+
+
 
         doc.add(Paragraph("1. TỔNG QUAN THU NHẬP").setFont(font).setBold())
         doc.add(Paragraph("- Tổng thu nhập: ${nf.format(income)}").setFont(font))
@@ -106,6 +128,9 @@ object PdfExporter {
     }
 
     // --- HÀM HỖ TRỢ VẼ NỘI DUNG BIẾN ĐỘNG ---
+
+
+
     private fun drawAnalysisContent(doc: Document, font: PdfFont?, list: List<Transaction>, nf: NumberFormat) {
         val income = list.filter { it.type.equals("income", true) }.sumOf { it.amount }
         val expense = list.filter { it.type.equals("expense", true) }.sumOf { it.amount }
@@ -118,6 +143,10 @@ object PdfExporter {
         val percent = if (income > 0) (expense / income * 100) else 0.0
         doc.add(Paragraph("- Tỷ lệ chi tiêu/thu nhập: ${String.format("%.1f", percent)}%").setFont(font))
     }
+
+
+
+
 
     // --- HÀM LOAD FONT ---
     private fun loadVietnameseFont(context: Context): PdfFont? {
@@ -133,3 +162,21 @@ object PdfExporter {
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

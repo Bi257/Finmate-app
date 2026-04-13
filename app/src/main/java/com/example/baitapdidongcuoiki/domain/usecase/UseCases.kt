@@ -4,18 +4,34 @@ data class UseCases(
 
     // Transaction (DB thật)
     val getTransactionsUseCase: GetTransactionsUseCase,
+
+
     val addTransactionUseCase: AddTransactionUseCase,
+
+
 
     // Tax
     val calculateTaxUseCase: CalculateTaxUseCase,
+
+
     val refreshTransactionsUseCase: RefreshTransactionsUseCase
+
+
 ) {
 
     // Wrapper cho tax
     fun calculateTaxResult(
+
+
         grossIncome: Double,
+
+
         dependents: Int
+
+
     ): TaxResult {
+
+
         return calculateTaxUseCase(grossIncome, dependents)
     }
 }

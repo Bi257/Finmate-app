@@ -263,11 +263,11 @@ fun HomeScreen(
                                 Canvas(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(150.dp) // Tăng chiều cao một chút cho dễ nhìn
+                                        .height(150.dp)
                                 ) {
                                     val stepX = size.width / (recentTransactions.size - 1)
 
-                                    // Hàm hỗ trợ vẽ đường cong mượt mà
+
                                     fun drawLinePath(data: List<Float>, color: Color) {
                                         val path = Path()
                                         val stepX = size.width / (data.size - 1)
@@ -422,3 +422,66 @@ fun LegendItem(color: Color, label: String) {
         )
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
