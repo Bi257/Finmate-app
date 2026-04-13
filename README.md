@@ -1,5 +1,13 @@
 # Finmate-app
 
+# Finmate-app
+# Finmate-app
+# Finmate-app
+# Finmate-app
+# Finmate-app
+# Finmate-app
+=======
+
 # 💜 FinMate — Trợ lý Tài chính & Quản lý Thuế TNCN
 
 > **"Tự động hóa hoàn toàn. Không cần nhập tay. Thuế đúng luật."**
@@ -838,3 +846,4 @@ MIT License — Copyright (c) 2026 FinMate Team
 
 
 
+ 660ed2763f6995caf8aa627329b3098751edf360
