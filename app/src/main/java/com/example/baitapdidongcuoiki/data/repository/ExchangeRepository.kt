@@ -101,3 +101,12 @@ class ExchangeRepository @Inject constructor(
         return rates.find { it.currency == "USD" }?.buy ?: 25400.0
     }
 }
+
+
+
+
+
+
+
+
+

@@ -10,3 +10,9 @@ import dagger.hilt.components.SingletonComponent
 interface NotificationListenerEntryPoint {
     fun addTransactionUseCase(): AddTransactionUseCase
 }
+
+
+
+
+
+

@@ -9,7 +9,9 @@ data class BinancePriceResponse(
     @SerializedName("price") val price: String? = null
 )
 
-/** Giá PAXG/USDT ~ tham chiếu giá vàng (1 token ≈ 1 oz vàng). */
+
+
+
 interface BinanceApi {
     @GET("api/v3/ticker/price")
     suspend fun getTickerPrice(@Query("symbol") symbol: String): BinancePriceResponse

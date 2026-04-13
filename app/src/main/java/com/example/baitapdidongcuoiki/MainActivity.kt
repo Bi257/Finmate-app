@@ -88,7 +88,7 @@ class MainActivity : ComponentActivity() {
                         if (currentRoute == "home") {
                             FloatingActionButton(
                                 onClick = { navController.navigate("add_transaction") },
-                                containerColor = MaterialTheme.colorScheme.primary
+                                containerColor = Color(0xFFFFE4E1)
                             ) {
                                 Icon(Icons.Default.Add, contentDescription = "Add")
                             }
