@@ -42,7 +42,7 @@ class RegisterViewModel @Inject constructor(
             val result = authRepository.register(email, password)
             if (result.isSuccess) {
                 registerStatus = "Đăng ký thành công!"
-                // Lúc này Ngân F5 trình duyệt trên máy tính sẽ thấy tài khoản
+
             } else {
                 // Hiển thị mã lỗi cụ thể từ Firebase (vd: Email already exists)
                 val errorMsg = result.exceptionOrNull()?.message ?: "Lỗi không xác định"
@@ -50,3 +50,40 @@ class RegisterViewModel @Inject constructor(
             }
         }
     }}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

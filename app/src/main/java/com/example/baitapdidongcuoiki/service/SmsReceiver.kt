@@ -39,7 +39,7 @@ class SmsReceiver : BroadcastReceiver() {
 
             Log.d("SMS_RAW", "[$sender] $body")
 
-            // Lưu tin nhắn vào database (bất kể nội dung gì)
+            // Lưu tin nhắn vào database
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val db = AppDatabase.getInstance(context)
@@ -73,7 +73,7 @@ class SmsReceiver : BroadcastReceiver() {
         }
     }
 
-    // Các hàm parse... giữ nguyên như cũ
+
     private data class BankSmsDraft(
         val title: String,
         val amountRaw: Double,
@@ -207,3 +207,76 @@ class SmsReceiver : BroadcastReceiver() {
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

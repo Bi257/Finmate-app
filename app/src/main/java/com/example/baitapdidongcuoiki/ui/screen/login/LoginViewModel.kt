@@ -12,11 +12,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    // 1. Phải Inject AuthRepository vào đây
+
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    var username by mutableStateOf("") // Đây chính là Email
+    var username by mutableStateOf("")
     var password by mutableStateOf("")
     var loginStatus by mutableStateOf("")
 
@@ -43,3 +43,52 @@ class LoginViewModel @Inject constructor(
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

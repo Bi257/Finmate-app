@@ -74,7 +74,7 @@ fun LoginScreen(viewModel: LoginViewModel, navController: NavController) {
                 )
 
 
-                Spacer(modifier = Modifier.height(24.dp)) // Giảm khoảng cách này xuống
+                Spacer(modifier = Modifier.height(24.dp))
 
 
 
@@ -90,7 +90,7 @@ fun LoginScreen(viewModel: LoginViewModel, navController: NavController) {
                     elevation = CardDefaults.cardElevation(8.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(24.dp), // Giảm padding card cho gọn
+                        modifier = Modifier.padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
@@ -128,7 +128,7 @@ fun LoginScreen(viewModel: LoginViewModel, navController: NavController) {
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // Nút Đăng nhập - Sửa lại cách bọc background để luôn hiện màu
+                        // Nút Đăng nhập
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -163,3 +163,76 @@ fun LoginScreen(viewModel: LoginViewModel, navController: NavController) {
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

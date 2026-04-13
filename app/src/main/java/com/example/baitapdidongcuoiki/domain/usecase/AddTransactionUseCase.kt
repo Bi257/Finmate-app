@@ -12,7 +12,10 @@ class AddTransactionUseCase @Inject constructor(
 
         validate(transaction)
 
-        //Insert vào DB (Room)
+
+
+
+
         repository.addTransaction(transaction)
     }
 

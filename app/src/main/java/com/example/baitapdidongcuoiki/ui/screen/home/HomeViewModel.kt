@@ -60,7 +60,7 @@ class HomeViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    // Logic tính toán giữ nguyên nhưng dùng ignoreCase cho an toàn
+
     private fun calculateIncome(list: List<Transaction>): Double =
         list.filter { it.type.equals("income", ignoreCase = true) || it.type.contains("thu", ignoreCase = true) }
             .sumOf { it.amount }
@@ -83,7 +83,7 @@ class HomeViewModel @Inject constructor(
     fun refresh() {
         viewModelScope.launch {
             useCases.refreshTransactionsUseCase.invoke()
-            // Sau đó observeTransactions sẽ tự động cập nhật vì Flow đang lắng nghe
+
         }
     }
 
@@ -107,3 +107,44 @@ class HomeViewModel @Inject constructor(
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

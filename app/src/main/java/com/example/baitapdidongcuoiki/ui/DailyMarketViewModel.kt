@@ -17,8 +17,8 @@ import com.example.baitapdidongcuoiki.data.remote.dto.ExchangeRateDto
 
 data class DailyMarketUiState(
     val rates: List<ExchangeRateDto> = emptyList(),
-    val goldPricePerLuongVnd: Double = 0.0,      // giá vàng (VND/lượng) từ PAXG quy đổi
-    val goldPriceMessage: String = "",            // thông báo về nguồn vàng
+    val goldPricePerLuongVnd: Double = 0.0,
+    val goldPriceMessage: String = "",
     val showDialog: Boolean = false,
     val dialogTitle: String = "Cập nhật từ nguồn dữ liệu",
     val message: String = "",
@@ -40,7 +40,7 @@ class DailyMarketViewModel @Inject constructor(
     private var initialLoadDone = false
 
     init {
-        // ✅ Sửa lỗi: gọi suspend function bên trong viewModelScope
+
         viewModelScope.launch {
             loadMarketData()
         }
@@ -152,3 +152,46 @@ class DailyMarketViewModel @Inject constructor(
         _ui.update { it.copy(showDialog = false) }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

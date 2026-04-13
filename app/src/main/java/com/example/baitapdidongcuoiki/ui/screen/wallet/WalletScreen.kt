@@ -30,7 +30,7 @@ fun WalletScreen(
     transactions: List<Transaction>,
     navController: NavController
 ) {
-    // Bảng màu đồng bộ HomeScreen
+
     val PurpleMain = Color(0xFF9C27B0)
     val SoftPink = Color(0xFFFFE1E6)
     val SoftPurple = Color(0xFFF3E5F5)
@@ -42,7 +42,7 @@ fun WalletScreen(
         if (it.type == "income") it.amount else -it.amount
     }
 
-    // Nền Gradient
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -214,3 +214,44 @@ fun WalletAction(
         Text(title, fontWeight = FontWeight.Bold, color = Color.DarkGray, fontSize = 14.sp)
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
