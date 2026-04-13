@@ -35,7 +35,7 @@ class NotificationListener : NotificationListenerService() {
         Log.d("NOTI_RAW", "Title: $title")
         Log.d("NOTI_RAW", "Text: $text")
 
-        // ===== LỌC APP TÀI CHÍNH =====
+
         if (!isFinanceApp(packageName)) return
 
         val transaction = parseNotification(packageName, title, text)
@@ -44,14 +44,14 @@ class NotificationListener : NotificationListenerService() {
 
             Log.d("NOTI_PARSED", transaction.toString())
 
-            // ===== LƯU DB =====
+            // LƯU DB
             CoroutineScope(Dispatchers.IO).launch {
                 addTransactionUseCase?.invoke(transaction)
             }
         }
     }
 
-    // ===== FILTER APP =====
+    //FILTER APP
     private fun isFinanceApp(pkg: String): Boolean {
         return pkg.contains("vcb") ||
                 pkg.contains("mbbank") ||
@@ -60,7 +60,7 @@ class NotificationListener : NotificationListenerService() {
                 pkg.contains("vietcombank")
     }
 
-    // ===== PARSE CHÍNH =====
+    // PARSE CHÍNH
     private fun parseNotification(
         packageName: String,
         title: String,
@@ -83,7 +83,7 @@ class NotificationListener : NotificationListenerService() {
         )
     }
 
-    // ===== PARSE TIỀN =====
+    //PARSE TIỀN
     private fun extractAmount(text: String): Double? {
         val regex = Regex("""\d{1,3}(,\d{3})*""")
         return regex.find(text)
@@ -92,7 +92,7 @@ class NotificationListener : NotificationListenerService() {
             ?.toDoubleOrNull()
     }
 
-    // ===== TYPE =====
+    // TYPE
     private fun detectType(text: String): String {
         return if (
             text.contains("nhận") ||
@@ -102,14 +102,14 @@ class NotificationListener : NotificationListenerService() {
         ) "income" else "expense"
     }
 
-    // ===== ACCOUNT =====
+    // ACCOUNT
     private fun extractAccount(text: String): String {
         return Regex("""\d{4,}""")
             .find(text)
             ?.value ?: "Ví"
     }
 
-    // ===== CATEGORY AUTO =====
+    // CATEGORY AUTO
     private fun detectCategory(text: String): String {
         return when {
             text.contains("lương") -> "Lương"

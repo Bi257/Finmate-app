@@ -10,14 +10,12 @@ class AddTransactionUseCase @Inject constructor(
 
     suspend operator fun invoke(transaction: Transaction) {
 
-        // 👉 Validate dữ liệu (giữ logic cũ + nâng cấp nhẹ)
         validate(transaction)
 
-        // 👉 Insert vào DB (Room)
+        //Insert vào DB (Room)
         repository.addTransaction(transaction)
     }
 
-    // 👉 Tách riêng để dễ test + clean code
     private fun validate(transaction: Transaction) {
 
         if (transaction.title.isBlank()) {
@@ -32,7 +30,6 @@ class AddTransactionUseCase @Inject constructor(
             throw IllegalArgumentException("Type is required")
         }
 
-        // 👉 Chuẩn hóa type (tránh lỗi UI)
         val type = transaction.type.lowercase()
         if (type != "income" && type != "expense") {
             throw IllegalArgumentException("Type must be 'income' or 'expense'")

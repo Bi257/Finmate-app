@@ -10,7 +10,6 @@ class GetTransactionsUseCase @Inject constructor(
 ) {
 
     operator fun invoke(): Flow<List<Transaction>> {
-        // 👉 Flow realtime từ Room → UI auto update
         return repository.getTransactions()
     }
 }

@@ -2,15 +2,15 @@ package com.example.baitapdidongcuoiki.domain.usecase
 
 data class UseCases(
 
-    // 👉 Transaction (DB thật)
+    // Transaction (DB thật)
     val getTransactionsUseCase: GetTransactionsUseCase,
     val addTransactionUseCase: AddTransactionUseCase,
 
-    // 👉 Tax (giữ logic cũ)
+    // Tax
     val calculateTaxUseCase: CalculateTaxUseCase
 ) {
 
-    // 👉 Wrapper cho tax (giữ tương thích code cũ nếu đang dùng)
+    // Wrapper cho tax
     fun calculateTaxResult(
         grossIncome: Double,
         dependents: Int
