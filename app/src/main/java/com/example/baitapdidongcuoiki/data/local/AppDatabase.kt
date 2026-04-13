@@ -6,7 +6,7 @@ import com.example.baitapdidongcuoiki.data.local.entity.TransactionEntity
 
 @Database(
     entities = [TransactionEntity::class, ExchangeRateEntity::class],
-    version = 3, // 🔥 tăng version
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
