@@ -78,7 +78,7 @@ fun LoginScreen(viewModel: LoginViewModel, navController: NavController) {
 
                 Text(text = "FinMate", color = MyPurple.copy(alpha = 0.8f), fontSize = 30.sp, fontWeight = FontWeight.ExtraBold)
                 Spacer(modifier = Modifier.height(40.dp))
-                Text("TEST GIT 123", color = Color.Red)
+
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
