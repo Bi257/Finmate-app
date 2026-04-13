@@ -73,7 +73,13 @@ fun LoginScreen(viewModel: LoginViewModel, navController: NavController) {
                     fontWeight = FontWeight.ExtraBold
                 )
 
+
                 Spacer(modifier = Modifier.height(24.dp)) // Giảm khoảng cách này xuống
+
+                Text(text = "FinMate", color = MyPurple.copy(alpha = 0.8f), fontSize = 30.sp, fontWeight = FontWeight.ExtraBold)
+                Text("TEST GIT 123", color = Color.Red)
+                Spacer(modifier = Modifier.height(40.dp))
+
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
