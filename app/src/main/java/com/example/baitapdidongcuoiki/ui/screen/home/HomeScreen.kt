@@ -231,6 +231,7 @@ fun HomeScreen(
                             )
                             Spacer(modifier = Modifier.height(12.dp))
 
+                            // 1. Lấy 7 giao dịch gần nhất và sắp xếp theo thời gian tăng dần
                             val recentTransactions = transactions
                                 .sortedByDescending { it.date }
                                 .take(7)
@@ -251,37 +252,68 @@ fun HomeScreen(
                                     )
                                 }
                             } else {
+                                // 2. Chuẩn bị dữ liệu cho 2 đường
+                                // Income: Nếu là chi (expense) thì coi như bằng 0 để đường không bị đứt
+                                val incomeValues = recentTransactions.map { if (it.type == "income") it.amount.toFloat() else 0f }
+                                val expenseValues = recentTransactions.map { if (it.type == "expense") it.amount.toFloat() else 0f }
+
+                                // Lấy giá trị lớn nhất của cả 2 để tính tỷ lệ chiều cao
+                                val maxVal = (incomeValues + expenseValues).maxOrNull()?.takeIf { it > 0 } ?: 1f
+
                                 Canvas(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(120.dp)
+                                        .height(150.dp) // Tăng chiều cao một chút cho dễ nhìn
                                 ) {
-                                    val values = recentTransactions.map { it.amount.toFloat() }
-                                    val maxValue = values.maxOrNull() ?: 1f
-                                    val count = values.size
-                                    val stepX = size.width / (count - 1)
-                                    val topPadding = 30f
-                                    val chartHeight = size.height - topPadding - 20f
+                                    val stepX = size.width / (recentTransactions.size - 1)
 
-                                    val points = mutableListOf<Offset>()
-                                    for (i in 0 until count) {
-                                        val x = i * stepX
-                                        val y = topPadding + chartHeight * (1 - (values[i] / maxValue))
-                                        points.add(Offset(x, y))
-                                    }
+                                    // Hàm hỗ trợ vẽ đường cong mượt mà
+                                    fun drawLinePath(data: List<Float>, color: Color) {
+                                        val path = Path()
+                                        val stepX = size.width / (data.size - 1)
+                                        val points = mutableListOf<Offset>()
 
-                                    val path = Path()
-                                    if (points.isNotEmpty()) {
-                                        path.moveTo(points[0].x, points[0].y)
-                                        for (i in 0 until points.size - 1) {
-                                            val p0 = points[i]
-                                            val p1 = points[i + 1]
-                                            val cp1x = p0.x + (p1.x - p0.x) / 2
-                                            path.cubicTo(cp1x, p0.y, cp1x, p1.y, p1.x, p1.y)
+                                        // 1. Tính toán tọa độ các điểm
+                                        data.forEachIndexed { index, value ->
+                                            val x = index * stepX
+                                            val y = size.height - (value / maxVal * size.height * 0.8f) - 10f
+                                            points.add(Offset(x, y))
                                         }
+
+                                        // 2. Vẽ đường cong mượt mà bằng CubicTo
+                                        if (points.isNotEmpty()) {
+                                            path.moveTo(points[0].x, points[0].y)
+                                            for (i in 0 until points.size - 1) {
+                                                val p0 = points[i]
+                                                val p1 = points[i + 1]
+
+                                                // Điểm điều khiển để tạo độ cong mượt
+                                                val controlPointX = p0.x + (p1.x - p0.x) / 2
+                                                path.cubicTo(
+                                                    x1 = controlPointX, y1 = p0.y, // Điểm điều khiển 1
+                                                    x2 = controlPointX, y2 = p1.y, // Điểm điều khiển 2
+                                                    x3 = p1.x, y3 = p1.y          // Điểm kết thúc
+                                                )
+                                            }
+                                        }
+
+                                        // 3. Vẽ đường Path và các điểm tròn
+                                        drawPath(path = path, color = color, style = Stroke(width = 6f)) // Tăng độ dày đường vẽ
+                                        points.forEach { drawCircle(color = color, radius = 8f, center = it) }
                                     }
-                                    drawPath(path = path, color = Color(0xFF9C27B0), style = Stroke(width = 3f))
-                                    points.forEach { drawCircle(Color(0xFF9C27B0), radius = 6f, center = it) }
+                                    // Vẽ đường Thu (Xanh) và Chi (Đỏ)
+                                    drawLinePath(incomeValues, Color(0xFF4CAF50))
+                                    drawLinePath(expenseValues, Color(0xFFF44336))
+                                }
+
+                                // 3. Chú thích (Legend)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    LegendItem(color = Color(0xFF4CAF50), label = "Thu")
+                                    LegendItem(color = Color(0xFFF44336), label = "Chi")
                                 }
                             }
                         }
@@ -370,6 +402,23 @@ fun HomeScreen(
                     Text("Đóng")
                 }
             }
+        )
+    }
+
+}@Composable
+fun LegendItem(color: Color, label: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(12.dp)
+                .background(color, RoundedCornerShape(2.dp))
+        )
+        Spacer(Modifier.width(4.dp))
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            color = Color.Gray,
+            fontWeight = FontWeight.Medium
         )
     }
 }

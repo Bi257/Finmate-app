@@ -8,20 +8,17 @@ import com.google.gson.Gson
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Đồng bộ dữ liệu “backend” theo đề: tỷ giá ngoại tệ (USD, VND) + tham chiếu giá vàng (PAXG).
- * Đồng bộ giao dịch Firestore theo user vẫn do [TransactionRepositoryImpl] khi thêm/ghi.
- */
+
 @Singleton
 class RemoteRepository @Inject constructor(
     private val exchangeRepository: ExchangeRepository,
     private val binanceApi: BinanceApi,
-    private val dao: ExchangeRateDao          // thêm để lưu giá vàng
+    private val dao: ExchangeRateDao
 ) {
     private val gson = Gson()
 
     suspend fun syncWithBackend() {
-        // 1. Lấy tỷ giá (USD, EUR, JPY → VND) - không cần truyền base, hàm tự xử lý
+        // 1. Lấy tỷ giá (USD, EUR, JPY → VND)
         runCatching { exchangeRepository.getExchangeRates() }
             .onFailure { Log.w(TAG, "Exchange rates: ${it.message}") }
 
@@ -35,7 +32,6 @@ class RemoteRepository @Inject constructor(
         }.onFailure { Log.w(TAG, "Gold spot: ${it.message}") }
     }
 
-    /** Lưu giá vàng (USD/ounce) vào database dưới dạng cache */
     private suspend fun cacheGoldPrice(usdPerToken: Double) {
         dao.insert(
             ExchangeRateEntity(
