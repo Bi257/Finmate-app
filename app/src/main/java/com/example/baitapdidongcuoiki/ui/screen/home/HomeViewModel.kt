@@ -30,7 +30,6 @@ class HomeViewModel @Inject constructor(
     val state: StateFlow<HomeState> = _state
 
     init {
-        // Lắng nghe dữ liệu ngay khi khởi tạo
         observeTransactions()
         syncWithBackend()
     }
@@ -38,10 +37,8 @@ class HomeViewModel @Inject constructor(
     private fun observeTransactions() {
         _state.update { it.copy(isLoading = true) }
 
-        // UseCase này gọi đến Repository (nơi mình đã sửa để lấy từ Firestore theo UserId)
         useCases.getTransactionsUseCase()
             .onEach { list ->
-                // Sắp xếp dữ liệu mới nhất lên đầu
                 val sortedList = list.sortedByDescending { it.date }
                 val income = calculateIncome(sortedList)
                 val expense = calculateExpense(sortedList)
@@ -90,11 +87,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    /*fun refresh() {
-        syncWithBackend()
-        // Gọi lại để đảm bảo dữ liệu mới nhất
-        observeTransactions()
-    }*/
 
     fun addTransaction(title: String, amount: Double, type: String, note: String = "") {
         viewModelScope.launch {
@@ -107,8 +99,7 @@ class HomeViewModel @Inject constructor(
             )
 
             try {
-                // Chỉ cần gọi UseCase, vì observeTransactions() đang "lắng nghe"
-                // nên khi Firebase có đồ mới, UI sẽ tự nhảy số theo.
+
                 useCases.addTransactionUseCase(newTransaction)
             } catch (e: Exception) {
                 _state.update { it.copy(error = "Không thể thêm giao dịch: ${e.message}") }
