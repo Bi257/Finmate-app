@@ -26,6 +26,5 @@ class SmsRepository @Inject constructor() {
     fun insert(context: Context, transaction: Transaction) {
         Log.d("DB", "Insert Transaction: $transaction")
 
-        // TODO: sau này lưu Room thật
     }
 }
