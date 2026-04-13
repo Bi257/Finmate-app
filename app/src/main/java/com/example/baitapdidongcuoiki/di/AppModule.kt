@@ -30,7 +30,7 @@ import com.example.baitapdidongcuoiki.data.repository.ExchangeRepository
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    // ===== 🗄 ROOM DATABASE =====
+    //ROOM DATABASE
     @Provides
     @Singleton
     fun provideAppDatabase(app: Application): AppDatabase {
@@ -43,7 +43,7 @@ object AppModule {
             .build()
     }
 
-    // ===== 📦 DAO =====
+    //DAO
     @Provides
     @Singleton
     fun provideTransactionDao(db: AppDatabase) = db.transactionDao()
@@ -87,7 +87,7 @@ object AppModule {
             .create(BinanceApi::class.java)
     }
 
-    // ===== ☁️ FIREBASE (Mới thêm) =====
+    //FIREBASE
     @Provides
     @Singleton
     fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -96,7 +96,7 @@ object AppModule {
     @Singleton
     fun provideAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 
-    // ===== 🧠 REPOSITORY (Đã cập nhật tham số) =====
+    //REPOSITORY
     @Provides
     @Singleton
     fun provideRepository(
@@ -107,7 +107,7 @@ object AppModule {
         return TransactionRepositoryImpl(dao, firestore, auth)
     }
 
-    // ===== 💰 USE CASES =====
+    //USE CASES
     @Provides
     @Singleton
     fun provideUseCases(
@@ -123,6 +123,6 @@ object AppModule {
     @Provides
     @Singleton
     fun provideExchangeRepository(api: ExchangeApi, dao: ExchangeRateDao): ExchangeRepository {
-        return ExchangeRepository(api, dao) // hoặc RemoteRepository(...)
+        return ExchangeRepository(api, dao) 
     }
 }

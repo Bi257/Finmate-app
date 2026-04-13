@@ -1,4 +1,3 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
@@ -11,7 +10,6 @@ plugins {
 subprojects {
     configurations.all {
         resolutionStrategy {
-            // Ép phiên bản JavaPoet để không bị lỗi khi dùng Hilt và thư viện Excel
             force("com.squareup:javapoet:1.13.0")
         }
     }

@@ -4,7 +4,7 @@ data class Transaction(
     val id: Int? = null,
     val title: String,
     val amount: Double,
-    val type: String, // "income" | "expense"
+    val type: String,
     val date: Long,
     val note: String = ""
 )

@@ -50,7 +50,7 @@ class MarketViewModel @Inject constructor(
                 val rates = exchangeRepository.getExchangeRates()
                 _rates.value = rates
 
-                // 2. Lấy giá vàng (mock + quy đổi từ PAXG nếu muốn)
+                // 2. Lấy giá vàng
                 val gold = fetchGoldPrices()
                 _goldPrices.value = gold
                 _error.value = null
@@ -63,7 +63,6 @@ class MarketViewModel @Inject constructor(
     }
 
     private suspend fun fetchGoldPrices(): GoldPrices {
-        // Giải pháp: dùng giá PAXG (USD/ounce) quy đổi ra VND/lượng
         // 1 lượng SJC = 37.5g, 1 ounce = 31.1035g => 1 lượng = 1.20556 ounce
         val ounceToLuong = 37.5 / 31.1035
         val usdToVnd = exchangeRepository.getUsdToVndRate()
@@ -76,7 +75,6 @@ class MarketViewModel @Inject constructor(
         val goldPriceVndPerLuong = goldPriceVndPerOunce * ounceToLuong  // VND/lượng
         val goldPriceTriệu = goldPriceVndPerLuong / 1_000_000
 
-        // Tạo biến động giả (có thể random nhẹ)
         val sjcBuy = goldPriceTriệu
         val sjcSell = goldPriceTriệu * 1.02
         val gold9999Buy = goldPriceTriệu * 0.97

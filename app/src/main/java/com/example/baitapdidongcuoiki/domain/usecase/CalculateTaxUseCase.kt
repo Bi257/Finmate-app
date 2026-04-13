@@ -6,7 +6,7 @@ data class TaxResult(
     val taxAmount: Double = 0.0,
     val taxableIncome: Double = 0.0,
     val dependantDeduction: Double = 0.0,
-    val personalDeduction: Double = 11_000_000.0 // 🔥 thêm
+    val personalDeduction: Double = 11_000_000.0
 )
 
 class CalculateTaxUseCase @Inject constructor() {

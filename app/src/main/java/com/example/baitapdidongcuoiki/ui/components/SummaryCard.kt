@@ -31,7 +31,7 @@ fun SummaryCard(
 
     Card(
         modifier = Modifier
-            .fillMaxWidth(), // 🔥 FIX CO LẠI
+            .fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
         elevation = CardDefaults.cardElevation(8.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
@@ -51,7 +51,7 @@ fun SummaryCard(
 
             Column {
 
-                // 🔹 TITLE
+                //  TITLE
                 Text(
                     "Ví của tôi",
                     color = Color.White.copy(alpha = 0.8f),
@@ -60,7 +60,7 @@ fun SummaryCard(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // 🔹 BALANCE
+                //  BALANCE
                 Text(
                     formatter.format(balance),
                     color = Color.White,
@@ -70,7 +70,7 @@ fun SummaryCard(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 🔹 INCOME / EXPENSE (CÂN ĐỀU)
+                //  INCOME / EXPENSE
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -93,7 +93,6 @@ fun SummaryCard(
     }
 }
 
-// 🔹 COMPONENT CON (CHO GỌN + ĐẸP)
 @Composable
 fun InfoItem(
     title: String,

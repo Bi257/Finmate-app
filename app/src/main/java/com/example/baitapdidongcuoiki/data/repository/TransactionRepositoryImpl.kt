@@ -23,7 +23,7 @@ class TransactionRepositoryImpl @Inject constructor(
         // 1. Lưu vào Room
         dao.insert(transaction.toEntity())
 
-        // 2. Đẩy lên Cloud Firestore theo đúng UserId
+        // 2. Đẩy lên Cloud Firestore
         try {
             val userId = auth.currentUser?.uid
             if (userId != null) {
@@ -47,7 +47,6 @@ class TransactionRepositoryImpl @Inject constructor(
         }
     }
 
-    // SỬA TẠI ĐÂY: Lấy dữ liệu theo thời gian thực từ Firestore thay vì lấy từ Room cũ
     override fun getTransactions(): Flow<List<Transaction>> = callbackFlow {
         val userId = auth.currentUser?.uid
 
@@ -69,7 +68,7 @@ class TransactionRepositoryImpl @Inject constructor(
 
                 if (snapshot != null) {
                     val transactions = snapshot.documents.mapNotNull { doc ->
-                        // Chuyển dữ liệu từ Firebase về Model Transaction của Ngân
+                        // Chuyển dữ liệu từ Firebase về Model Transaction
                         Transaction(
                             title = doc.getString("title") ?: "",
                             amount = doc.getDouble("amount") ?: 0.0,
@@ -82,7 +81,6 @@ class TransactionRepositoryImpl @Inject constructor(
                 }
             }
 
-        // Khi không dùng nữa thì đóng kết nối
         awaitClose { subscription.remove() }
     }
 }

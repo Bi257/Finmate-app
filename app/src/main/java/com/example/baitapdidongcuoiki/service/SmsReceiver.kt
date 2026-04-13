@@ -91,7 +91,6 @@ class SmsReceiver : BroadcastReceiver() {
         }
     }
 
-    /** Bóc số tiền dạng USD: `1,234.56 USD`, `$500`, `500 usd` */
     private fun parseUsdAmount(body: String): Double? {
         val patterns = listOf(
             Regex("""([\d,]+(?:\.\d+)?)\s*(USD|usd)"""),
