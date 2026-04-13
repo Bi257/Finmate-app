@@ -48,14 +48,13 @@ fun ReportScreen(
     val MauTrang = Color.White
     val MauTim = Color(0xFF9C27B0)
     val MauHong = Color(0xFFE91E63)
-    val MauXanhNgoc = Color(0xFF00BCD4)
     val NenNhat = Color(0xFFF3E5F5)
 
     val currencyFormatter = remember { NumberFormat.getCurrencyInstance(Locale("vi", "VN")) }
     val numberFormatter = remember { NumberFormat.getNumberInstance(Locale.US) }
     val currentTime = remember { SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()) }
 
-    // --- Logic Quy đổi nhanh (Giữ nguyên) ---
+    // --- Logic Quy đổi nhanh ---
     var inputAmount by remember { mutableStateOf("") }
     var selectedCurrency by remember { mutableStateOf("USD") }
     var expanded by remember { mutableStateOf(false) }
@@ -66,23 +65,12 @@ fun ReportScreen(
     val jpyRate = marketState.rates.find { it.currency == "JPY" }?.buy ?: 0.0
     val goldPrice = marketState.goldPricePerLuongVnd
 
-    val conversionResult = remember(inputAmount, selectedCurrency, usdRate, eurRate, jpyRate, goldPrice) {
-        val amount = inputAmount.toDoubleOrNull() ?: 0.0
-        when (selectedCurrency) {
-            "USD" -> amount * usdRate
-            "EUR" -> amount * eurRate
-            "JPY" -> amount * jpyRate
-            "Vàng (PAXG/lượng)" -> amount * goldPrice
-            else -> 0.0
-        }
-    }
-
     LazyColumn(
         modifier = Modifier.fillMaxSize().background(NenNhat),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // ========== PHẦN 1: THỊ TRƯỜNG (Giữ nguyên) ==========
+        // ========== PHẦN 1: THỊ TRƯỜNG ==========
         item {
             Column {
                 Text("Thị trường", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MauTim)
@@ -101,17 +89,16 @@ fun ReportScreen(
                     Text("Tỷ giá & Giá vàng", fontWeight = FontWeight.Bold, color = MauTim)
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Render tỷ giá ngoại tệ... (Code tỷ giá cũ của bạn)
                     marketState.rates.take(3).forEach { rate ->
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("${rate.currency}/VND", modifier = Modifier.weight(1f))
                             Text(numberFormatter.format(rate.buy), textAlign = TextAlign.End, modifier = Modifier.weight(1f))
-                            Text("${rate.changePercent}%", color = if(rate.changePercent>=0) MauHong else MauTim, textAlign = TextAlign.End, modifier = Modifier.weight(0.5f))
+                            Text("${rate.changePercent}%", color = if(rate.changePercent>=0) Color(0xFF4CAF50) else MauHong, textAlign = TextAlign.End, modifier = Modifier.weight(0.5f))
                         }
                     }
 
                     if (goldPrice > 0) {
-                        Divider(Modifier.padding(vertical = 8.dp))
+                        HorizontalDivider(Modifier.padding(vertical = 8.dp))
                         Text("Vàng: ${numberFormatter.format(goldPrice)} VND", fontWeight = FontWeight.Medium)
                     }
 
@@ -140,14 +127,14 @@ fun ReportScreen(
             }
         }
 
-        // ========== PHẦN 2: BÁO CÁO TÀI CHÍNH & THUẾ (Sửa mới) ==========
+        // ========== PHẦN 2: XUẤT BÁO CÁO (ĐÃ SỬA) ==========
         item {
             Text("Xuất báo cáo tài chính", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MauTim)
         }
 
         item {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                // 1. Báo cáo Thu chi
+                // 1. Báo cáo Thu chi (Excel)
                 ExportCard(
                     title = "Báo cáo Thu chi",
                     description = "Chi tiết tất cả giao dịch (File Excel)",
@@ -161,7 +148,7 @@ fun ReportScreen(
                     }
                 )
 
-                // 2. Quyết toán Thuế TNCN (Nút quan trọng nhất)
+                // 2. Quyết toán Thuế TNCN (PDF - Sửa để gọi ReportType.TAX)
                 ExportCard(
                     title = "Quyết toán Thuế TNCN",
                     description = "Dự toán thuế & Giảm trừ gia cảnh (PDF)",
@@ -170,7 +157,7 @@ fun ReportScreen(
                     onClick = { showTaxDialog = true }
                 )
 
-                // 3. Phân tích biến động
+                // 3. Phân tích biến động (PDF - Sửa để gọi ReportType.ANALYSIS)
                 ExportCard(
                     title = "Phân tích biến động",
                     description = "Biểu đồ xu hướng và tỷ lệ (PDF)",
@@ -178,8 +165,13 @@ fun ReportScreen(
                     color = Color(0xFF2196F3),
                     onClick = {
                         try {
-                            PdfExporter.export(context, transactions)
-                            Toast.makeText(context, "Đã xuất PDF thành công", Toast.LENGTH_SHORT).show()
+                            // GỌI HÀM VỚI TYPE ANALYSIS
+                            PdfExporter.export(
+                                context = context,
+                                transactions = transactions,
+                                type = PdfExporter.ReportType.ANALYSIS
+                            )
+                            Toast.makeText(context, "Đã xuất PDF Biến động thành công", Toast.LENGTH_SHORT).show()
                         } catch (e: Exception) { Toast.makeText(context, "Lỗi: ${e.message}", Toast.LENGTH_SHORT).show() }
                     }
                 )
@@ -202,7 +194,7 @@ fun ReportScreen(
         item { Spacer(modifier = Modifier.height(80.dp)) }
     }
 
-    // --- DIALOG NHẬP NGƯỜI PHỤ THUỘC ---
+    // --- DIALOG NHẬP NGƯỜI PHỤ THUỘC (ĐÃ SỬA) ---
     if (showTaxDialog) {
         AlertDialog(
             onDismissRequest = { showTaxDialog = false },
@@ -223,8 +215,18 @@ fun ReportScreen(
                 Button(
                     onClick = {
                         showTaxDialog = false
-                        // Chỗ này Ngân có thể gọi hàm export PDF và truyền thêm số dependentCount vào nhé
-                        Toast.makeText(context, "Đang khởi tạo báo cáo thuế cho $dependentCount người phụ thuộc...", Toast.LENGTH_LONG).show()
+                        try {
+                            // GỌI HÀM VỚI TYPE TAX VÀ TRUYỀN SỐ NGƯỜI PHỤ THUỘC
+                            PdfExporter.export(
+                                context = context,
+                                transactions = transactions,
+                                dependentCount = dependentCount.toIntOrNull() ?: 0,
+                                type = PdfExporter.ReportType.TAX
+                            )
+                            Toast.makeText(context, "Đã xuất báo cáo thuế!", Toast.LENGTH_SHORT).show()
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Lỗi xuất thuế: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MauTim)
                 ) { Text("Xuất PDF") }
@@ -234,7 +236,6 @@ fun ReportScreen(
     }
 }
 
-// --- Component hỗ trợ vẽ thẻ Export ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExportCard(
